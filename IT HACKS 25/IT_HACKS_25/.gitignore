@@ -1,0 +1,25 @@
+# Virtual environments
+.venv/
+venv/
+backend/.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node.js
+node_modules/
+frontend/.next/
+
+# Environment variables
+.env
+*.env
+
+# Archives
+*.zip
+*.tar.gz
+
+# System
+.DS_Store
