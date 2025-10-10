@@ -24,7 +24,10 @@ export default function Dashboard() {
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Rooms</h1>
-          <Link href="/upload"><a className="px-3 py-1 bg-blue-600 text-white rounded">Upload CSV</a></Link>
+          <Link href="/upload" className="px-3 py-1 bg-blue-600 text-white rounded">
+  Upload CSV
+</Link>
+
         </div>
         {message && <div className="text-red-500">{message}</div>}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
