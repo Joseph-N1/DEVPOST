@@ -7,3 +7,8 @@ python-multipart
 pydantic
 scikit-learn
 joblib
+xgboost
+shap
+pandas
+scikit-learn
+numpy
