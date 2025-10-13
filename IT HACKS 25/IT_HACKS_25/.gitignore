@@ -1,25 +1,28 @@
-# Virtual environments
-.venv/
-venv/
-backend/.venv/
+# Node / Next
+node_modules/
+.next/
+dist/
+npm-debug.log
+yarn-error.log
+.env
+.env.local
+.env.*.local
 
-# Python
+# Backend generated data & models
+/backend/data/
+/backend/models/*.joblib
+
+# Python cache
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
 
-# Node.js
-node_modules/
-frontend/.next/
+# IDE
+.vscode/
+.idea/
 
-# Environment variables
-.env
-*.env
-
-# Archives
-*.zip
-*.tar.gz
-
-# System
+# OS / misc
 .DS_Store
+*.log
+
+# Docker overrides
+docker-compose.override.yml

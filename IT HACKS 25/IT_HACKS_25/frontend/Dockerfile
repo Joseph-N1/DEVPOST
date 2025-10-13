@@ -1,8 +1,15 @@
+FROM node:18-alpine
 
-FROM node:18-bullseye
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm install
-COPY . .
+
+# copy package files first to cache dependencies
+COPY package.json package-lock.json* yarn.lock* /app/
+RUN npm ci --silent || npm install --silent
+
+# copy rest of app
+COPY . /app
+
 EXPOSE 3000
-CMD ["npm","run","dev"]
+
+# dev command; docker-compose may override
+CMD ["npm", "run", "dev"]
