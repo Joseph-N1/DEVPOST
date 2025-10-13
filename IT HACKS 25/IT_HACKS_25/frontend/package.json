@@ -14,9 +14,11 @@
   "description": "",
   "dependencies": {
     "axios": "^1.12.2",
+    "i18next": "^25.6.0",
     "next": "^15.5.4",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-i18next": "^16.0.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",
