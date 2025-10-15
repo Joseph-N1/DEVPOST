@@ -1,15 +1,13 @@
 import "../styles/globals.css";
 import "../i18n";
 import Navbar from "../components/ui/Navbar";
+import Layout from "../components/layout/Layout";
 
 function MyApp({ Component, pageProps }) {
   return (
-    <>
-      <Navbar />
-      <div className="p-6">
-        <Component {...pageProps} />
-      </div>
-    </>
+    <Layout>
+      <Component {...pageProps} />
+    </Layout>
   );
 }
 

@@ -12,3 +12,4 @@ shap
 pandas
 scikit-learn
 numpy
+requests
