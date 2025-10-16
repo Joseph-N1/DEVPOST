@@ -39,7 +39,7 @@ export default function AnalyticsChart({
         label: datasetLabel,
         data,
         backgroundColor: color,
-        borderColor: color.replace("0.7", "1"),
+        borderColor: color.replace(/[\d.]+\)$/g, "1)"),
         tension: 0.3,
         fill: true,
       },
@@ -58,9 +58,13 @@ export default function AnalyticsChart({
     },
   };
 
-  return (
-    <div className="bg-white/90 backdrop-blur-md p-5 rounded-xl shadow-md hover:shadow-lg border border-green-100">
-      {type === "bar" ? <Bar data={chartData} options={options} /> : <Line data={chartData} options={options} />}
-    </div>
-  );
+ return (
+  <div className="bg-white/90 backdrop-blur-md p-5 rounded-xl shadow-md hover:shadow-lg border border-green-100">
+    {type === "bar" ? (
+      <Bar key="bar" data={chartData} options={options} />
+    ) : (
+      <Line key="line" data={chartData} options={options} />
+    )}
+  </div>
+);
 }

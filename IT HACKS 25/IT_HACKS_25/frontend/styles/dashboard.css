@@ -1,0 +1,48 @@
+/* DASHBOARD LAYOUT */
+.dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  padding: 24px;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* DASHBOARD HEADER */
+.dashboard-header {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.dashboard-header h1 {
+  font-size: 1.8rem;
+  color: #1e293b;
+}
+
+.dashboard-header .filter-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.dashboard-header select,
+.dashboard-header button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  cursor: pointer;
+}
+
+.dashboard-header button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.dashboard-header button:hover {
+  background-color: #2563eb;
+}
