@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Menu, X, BarChart3, Upload, Home } from "lucide-react"; // if you have lucide-react installed
+import { useTranslation } from 'react-i18next';
 
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { t } = useTranslation();
 
   const navItems = [
     { name: "Overview", href: "/dashboard", icon: <Home size={18} /> },

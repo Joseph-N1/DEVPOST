@@ -4,7 +4,7 @@ import Link from "next/link";
 import ChartCard from "../components/ui/ChartCard";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import MetricCard from "../components/ui/MetricCard";
-import AnalyticsChart from "../components/ui/DynamicAnalyticsChart";
+import AnalyticsChart from "../components/ui/AnalyticsChart";
 
 
 
@@ -26,13 +26,16 @@ export default function DashboardPage() {
     fetch();
   }, []);
 
-  const mockMetrics = [
-    { title: "Average Weight Gain", value: "2.4 kg", trend: 8 },
-    { title: "Feed Conversion Ratio", value: "1.78", trend: -3 },
-    { title: "Mortality Rate", value: "0.5%", trend: 0 },
+  const metrics = [
+    { title: "Average Weight Gain", value: "2.4 kg", trend: 8, icon: "🐔" },
+    { title: "Feed Conversion Ratio", value: "1.78", trend: -3, icon: "🌾" },
+    { title: "Mortality Rate", value: "0.5%", trend: 0, icon: "💚" },
+    { title: "Water Consumption", value: "2.5L", trend: 5, icon: "💧" },
+    { title: "Energy Efficiency", value: "92%", trend: 2, icon: "⚡" },
+    { title: "Sustainability Score", value: "8.5", trend: 3, icon: "🌿" },
   ];
 
-  const mockChartData = {
+  const chartData = {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     data: [2.1, 2.3, 2.5, 2.4, 2.6, 2.8, 3.0],
   };
@@ -65,7 +68,7 @@ export default function DashboardPage() {
       <div className="p-6 space-y-6">
         {/* Metrics Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockMetrics.map((m) => (
+          {metrics.map((m) => (
             <MetricCard
               key={m.title}
               title={m.title}
@@ -79,11 +82,10 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 gap-6">
           <div className="chart-card col-span-1">
             <AnalyticsChart
-              title="Weekly Weight Gain Trend"
-              labels={mockChartData.labels}
-              data={mockChartData.data}
+              title="Weekly Performance Trends"
+              labels={chartData.labels}
+              data={chartData.data}
               datasetLabel="Weight (kg)"
-              type="line"
             />
           </div>
         </div>

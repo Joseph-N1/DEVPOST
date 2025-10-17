@@ -1,19 +1,14 @@
-import Navbar from "../ui/Navbar";
-import Footer from "../ui/Footer";
+import Navbar from '../ui/Navbar';
+import Footer from '../ui/Footer';
 
 export default function Layout({ children }) {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50 via-white to-sky-50 text-gray-800">
-      {/* Top navigation */}
-      <Navbar />
-
-      {/* Main page content */}
-      <main className="flex-1 container mx-auto px-6 py-8 transition-all duration-300 ease-in-out">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-sky-50 to-green-50">
+      <Navbar className="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-green-100" />
+      <main className="flex-grow">
         {children}
       </main>
-
-      {/* Footer */}
-      <Footer />
+      <Footer className="bg-white/80 backdrop-blur-sm border-t border-green-100" />
     </div>
-  );
+  )
 }
