@@ -1,28 +1,110 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+/* --------------------------
+   Base Layer (HTML / Body)
+--------------------------- */
 @layer base {
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
-    @apply antialiased bg-gray-50;
+    @apply antialiased bg-gray-50 text-gray-900 transition-colors duration-300 ease-in-out;
+  }
+
+  /* Dark mode body background */
+  .dark body {
+    @apply bg-gray-900 text-gray-100;
   }
 }
 
+/* --------------------------
+   Theme Variables
+--------------------------- */
 :root {
   --primary: #059669;
   --primary-light: #34D399;
+  --primary-dark: #047857;
+  --accent: #2563eb;
 }
 
-/* Smooth fade transition between pages */
+.dark {
+  --primary: #10b981;
+  --primary-light: #6ee7b7;
+  --primary-dark: #064e3b;
+  --accent: #3b82f6;
+}
+
+/* --------------------------
+   Page Transitions
+--------------------------- */
 main {
   animation: fadeIn 0.4s ease-in-out;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------
+   Reusable Components
+--------------------------- */
+@layer components {
+  /* Card component */
+  .card {
+    @apply bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-4 transition-all hover:shadow-md;
+  }
+
+  /* Primary Button */
+  .btn-primary {
+    @apply bg-[var(--primary)] text-white font-semibold px-4 py-2 rounded-lg 
+           hover:bg-[var(--primary-light)] transition-colors duration-300;
+  }
+
+  /* Secondary / Outline Button */
+  .btn-secondary {
+    @apply border border-[var(--primary)] text-[var(--primary)] font-medium px-4 py-2 rounded-lg 
+           hover:bg-[var(--primary)] hover:text-white transition-colors duration-300;
+  }
+
+  /* Dashboard container */
+  .dashboard-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6;
+  }
+
+  /* Page section titles */
+  .section-title {
+    @apply text-2xl font-bold mb-4 text-[var(--primary-dark)] dark:text-[var(--primary-light)];
+  }
+
+  /* Navbar active link */
+  .nav-active {
+    @apply text-[var(--primary)] font-semibold border-b-2 border-[var(--primary)];
+  }
+}
+
+/* --------------------------
+   Utility Enhancements
+--------------------------- */
+@layer utilities {
+  .fade {
+    @apply transition-opacity duration-300 ease-in-out;
+  }
+
+  .scale-hover {
+    @apply transform transition-transform duration-300 hover:scale-105;
+  }
+
+  .shadow-soft {
+    @apply shadow-md dark:shadow-lg;
+  }
 }

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import ChartCard from "../components/ui/ChartCard";
-import DashboardLayout from "../components/layout/DashboardLayout";
-import MetricCard from "../components/ui/MetricCard";
-import AnalyticsChart from "../components/ui/AnalyticsChart";
+import ChartCard from "@/components/ui/ChartCard";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import MetricCard from "@/components/ui/MetricCard";
+import AnalyticsChart from "@/components/ui/AnalyticsChart";
 
 
 
