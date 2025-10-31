@@ -15,14 +15,16 @@ export default function UploadBox() {
 
     try {
       setLoading(true);
+      // DO NOT set Content-Type manually — let the browser set the multipart boundary
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/upload/csv`,
-        form,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        form
       );
       setMessage(t("upload_success") || "File uploaded successfully!");
     } catch (err) {
-      setMessage(t("upload_error") || "Upload failed. Please try again.");
+      // show server error if available
+      const detail = err.response?.data?.detail || err.message;
+      setMessage((t("upload_error") || "Upload failed. Please try again.") + " — " + detail);
     } finally {
       setLoading(false);
     }
