@@ -37,9 +37,7 @@ export default function Upload() {
     const form = new FormData()
     form.append('file', file)
     try {
-      const res = await axios.post(`${apiBaseUrl}/upload/csv`, form, {
-        headers: {'Content-Type': 'multipart/form-data'}
-      })
+      const res = await axios.post(`${apiBaseUrl}/upload/csv`, form )
       setMessage('✅ Upload successful!')
       fetchFiles() // Refresh file list after upload
     } catch (err) {
