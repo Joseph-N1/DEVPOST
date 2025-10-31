@@ -5,6 +5,18 @@ import InfoBadge from './InfoBadge';
 import Button from './Button';
 import Loader from './Loader';
 
+// add directly after your import block in FileList.js
+console.log('FileList imports types:', {
+  CardType: typeof Card,
+  CardValue: Card,
+  InfoBadgeType: typeof InfoBadge,
+  InfoBadgeValue: InfoBadge,
+  ButtonType: typeof Button,
+  ButtonValue: Button,
+  LoaderType: typeof Loader,
+  LoaderValue: Loader,
+});
+
 const FileList = ({ files, onFileSelect, loading, error }) => {
   if (loading) return <Loader />;
   if (error) return <div className="text-red-500">Error loading files: {error}</div>;

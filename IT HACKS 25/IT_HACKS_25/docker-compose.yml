@@ -1,5 +1,15 @@
-version: '3.8'
 services:
+  backend:
+    build: ./backend
+    container_name: it_hacks_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
   frontend:
     build: ./frontend
     container_name: it_hacks_frontend
@@ -8,22 +18,9 @@ services:
     depends_on:
       - backend
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000        # for browser requests
-      - NEXT_INTERNAL_API_URL=http://backend:8000       # for server-side/Internal requests
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_INTERNAL_API_URL=http://backend:8000
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    working_dir: /app
-    command: "npm run dev"
-
-  backend:
-    build: ./backend
-    container_name: it_hacks_backend
-    ports:
-      - "8000:8000"
-    environment:
-      - PYTHONUNBUFFERED=1
-    volumes:
-      - ./backend:/app
-    working_dir: /app
-    command: "uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    command: npm run dev
