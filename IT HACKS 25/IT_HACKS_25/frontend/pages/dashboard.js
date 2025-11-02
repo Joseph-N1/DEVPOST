@@ -1,29 +1,30 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import ChartCard from "@/components/ui/ChartCard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import ChartCard from "@/components/ui/ChartCard";
 import MetricCard from "@/components/ui/MetricCard";
 import AnalyticsChart from "@/components/ui/AnalyticsChart";
-
-
+import SectionTitle from "@/components/ui/SectionTitle";
+import ChartContainer from "@/components/ui/ChartContainer";
 
 export default function DashboardPage() {
   const [rooms, setRooms] = useState([]);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchRooms = async () => {
       try {
-        const r = await axios.get(
+        const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/analysis/rooms`
         );
-        setRooms(r.data.rooms || []);
-      } catch (e) {
-        setMessage("Error fetching rooms");
+        setRooms(response.data.rooms || []);
+      } catch (error) {
+        console.error(error);
+        setMessage("Error fetching rooms. Please check backend connection.");
       }
     };
-    fetch();
+    fetchRooms();
   }, []);
 
   const metrics = [
@@ -42,10 +43,12 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="dashboard-container max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="dashboard-header mb-8">
-          <h1 className="text-3xl font-bold text-green-700">Farm Dashboard</h1>
+      <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+        {/* 🔹 Header Section */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-3xl font-bold text-green-700 tracking-tight">
+            Farm Dashboard
+          </h1>
           <Link
             href="/upload"
             className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition"
@@ -54,41 +57,51 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Error message */}
-        {message && <div className="text-red-500 mb-4">{message}</div>}
+        {/* 🔹 Error message */}
+        {message && (
+          <div className="text-red-500 bg-red-50 border border-red-200 p-3 rounded-lg">
+            {message}
+          </div>
+        )}
 
-        {/* Dynamic Room Charts */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {rooms.map((r) => (
-            <ChartCard key={r} title={r} />
-          ))}
-        </div>
-      </div>
+        {/* 🔹 Room Charts Section */}
+        {rooms.length > 0 && (
+          <>
+            <SectionTitle
+              title="Active Farm Rooms"
+              subtitle="Room-specific growth and performance analytics"
+            />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {rooms.map((r) => (
+                <ChartCard key={r} title={r} />
+              ))}
+            </div>
+          </>
+        )}
 
-      <div className="p-6 space-y-6">
-        {/* Metrics Section */}
+        {/* 🔹 Metrics Section */}
+        <SectionTitle
+          title="Farm Metrics"
+          subtitle="Daily health and performance insights"
+        />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {metrics.map((m) => (
-            <MetricCard
-              key={m.title}
-              title={m.title}
-              value={m.value}
-              trend={m.trend}
-            />
+            <MetricCard key={m.title} {...m} />
           ))}
         </div>
 
-        {/* Chart Section */}
-        <div className="grid grid-cols-1 gap-6">
-          <div className="chart-card col-span-1">
-            <AnalyticsChart
-              title="Weekly Performance Trends"
-              labels={chartData.labels}
-              data={chartData.data}
-              datasetLabel="Weight (kg)"
-            />
-          </div>
-        </div>
+        {/* 🔹 Weekly Chart Section */}
+        <SectionTitle
+          title="Performance Trends"
+          subtitle="Weekly weight gain and efficiency overview"
+        />
+        <ChartContainer title="Weekly Performance Trends">
+          <AnalyticsChart
+            labels={chartData.labels}
+            data={chartData.data}
+            datasetLabel="Weight (kg)"
+          />
+        </ChartContainer>
       </div>
     </DashboardLayout>
   );

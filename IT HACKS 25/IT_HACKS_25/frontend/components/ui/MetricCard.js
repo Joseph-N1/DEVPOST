@@ -1,32 +1,27 @@
-"use client";
+// frontend/components/ui/MetricCard.js
+import React from "react";
 
 export default function MetricCard({ title, value, trend, icon }) {
-  const getTrendIcon = (trend) => {
-    if (trend > 0) return '🌱';
-    if (trend < 0) return '📉';
-    return '⚖️';
-  };
+  const trendColor =
+    trend > 0 ? "text-green-600" : trend < 0 ? "text-red-500" : "text-gray-500";
+  const trendBg =
+    trend > 0 ? "bg-green-100" : trend < 0 ? "bg-red-100" : "bg-gray-100";
+  const trendSymbol = trend > 0 ? "▲" : trend < 0 ? "▼" : "—";
 
   return (
-    <div className="group p-6 bg-white/70 backdrop-blur-md rounded-xl shadow-lg border border-green-100 
-                    hover:shadow-xl transition-all duration-300 hover:scale-102">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
-        <span className="text-2xl">{icon}</span>
+    <div className="bg-gradient-to-br from-white via-green-50 to-sky-50 rounded-2xl p-5 shadow-md hover:shadow-lg hover:scale-[1.02] transition-transform duration-200">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+          <p className="text-2xl font-bold text-gray-800 mt-1">{value}</p>
+        </div>
+        <div className="text-3xl">{icon}</div>
       </div>
-      
-      <div className="flex items-end justify-between">
-        <span className="text-3xl font-bold text-green-700 group-hover:scale-105 transition-transform">
-          {value}
-        </span>
-        {trend !== 0 && (
-          <div className={`flex items-center gap-1 ${
-            trend > 0 ? 'text-green-500' : 'text-red-500'
-          }`}>
-            <span className="text-lg">{getTrendIcon(trend)}</span>
-            <span className="font-medium">{Math.abs(trend)}%</span>
-          </div>
-        )}
+
+      <div
+        className={`inline-flex items-center gap-1 mt-3 px-2 py-1 rounded-full text-xs font-semibold ${trendBg} ${trendColor}`}
+      >
+        {trendSymbol} {Math.abs(trend)}%
       </div>
     </div>
   );
