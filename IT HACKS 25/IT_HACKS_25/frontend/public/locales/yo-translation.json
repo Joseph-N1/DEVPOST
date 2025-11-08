@@ -2,5 +2,31 @@
   "app_title": "IT Hacks 25 Dashboard",
   "upload": "Ṣe igbasilẹ CSV",
   "dashboard": "Dasibodu",
-  "welcome": "Kaabọ si IT Hacks 25 !!!"
+  "reports": "Awọn Iroyin",
+  "analytics": "Atupale",
+  "how_it_works": "Bi O ṣe n-ṣiṣẹ",
+  "welcome": "Kaabọ si IT Hacks 25 !!!",
+  "navigation": {
+    "back": "Pada",
+    "home": "Ile"
+  },
+  "room": {
+    "title": "Alaye Yara",
+    "metrics": "Awọn Iwọn Yara",
+    "analytics": "Atupale Yara"
+  },
+  "metrics": {
+    "temperature": "Igbona",
+    "humidity": "Omi ninu afẹfẹ",
+    "feed_consumption": "Jijade Ounjẹ",
+    "water_consumption": "Jijade Omi",
+    "mortality_rate": "Oṣuwọn Iku",
+    "egg_production": "Iṣelọpọ Ẹyin"
+  },
+  "actions": {
+    "export": "Ṣe igbejade Data",
+    "filter": "Ajọ",
+    "compare": "Fiwera",
+    "refresh": "Sọ Data di Tuntun"
+  }
 }

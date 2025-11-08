@@ -24,13 +24,31 @@ export default function Navbar() {
         </Link>
 
         {/* Center Section – Navigation Links */}
-        <div className="flex gap-4">
-          <Link href="/upload" className={linkClass("/upload")}>
-            {t("upload")}
-          </Link>
-          <Link href="/dashboard" className={linkClass("/dashboard")}>
-            {t("dashboard")}
-          </Link>
+        <div className="flex items-center gap-4">
+          <div className="flex gap-2">
+            {/* Main Navigation */}
+            <Link href="/dashboard" className={linkClass("/dashboard")}>
+              {t("dashboard")}
+            </Link>
+            <Link href="/analytics" className={linkClass("/analytics")}>
+              {t("analytics")}
+            </Link>
+            <Link href="/reports" className={linkClass("/reports")}>
+              {t("reports")}
+            </Link>
+          </div>
+          
+          <div className="h-6 w-px bg-gray-300" /> {/* Divider */}
+          
+          <div className="flex gap-2">
+            {/* Secondary Navigation */}
+            <Link href="/upload" className={linkClass("/upload")}>
+              {t("upload")}
+            </Link>
+            <Link href="/how" className={linkClass("/how")}>
+              {t("how_it_works")}
+            </Link>
+          </div>
         </div>
 
         {/* Right Section – Language Switcher */}

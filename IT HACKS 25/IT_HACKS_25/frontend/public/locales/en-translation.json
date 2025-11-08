@@ -2,5 +2,39 @@
   "app_title": "IT Hacks 25 Dashboard",
   "upload": "Upload CSV",
   "dashboard": "Dashboard",
-  "welcome": "Welcome to IT Hacks 25 !!!"
+  "reports": "Reports",
+  "analytics": "Analytics",
+  "how_it_works": "How It Works",
+  "welcome": "Welcome to IT Hacks 25 !!!",
+  "navigation": {
+    "back": "Back",
+    "home": "Home"
+  },
+  "room": {
+    "title": "Room Details",
+    "metrics": "Room Metrics",
+    "analytics": "Room Analytics"
+  },
+  "metrics": {
+    "temperature": "Temperature",
+    "humidity": "Humidity",
+    "feed_consumption": "Feed Consumption",
+    "water_consumption": "Water Consumption",
+    "mortality_rate": "Mortality Rate",
+    "egg_production": "Egg Production",
+    "total_birds_tooltip": "Current number of birds in the room",
+    "avg_weight_tooltip": "Average weight of birds in the room",
+    "mortality_tooltip": "Mortality rate in the last 24 hours",
+    "eggs_tooltip": "Total eggs collected today",
+    "temperature_tooltip": "Current room temperature",
+    "humidity_tooltip": "Current room humidity level",
+    "feed_tooltip": "Daily feed consumption per bird",
+    "water_tooltip": "Daily water consumption per bird"
+  },
+  "actions": {
+    "export": "Export Data",
+    "filter": "Filter",
+    "compare": "Compare",
+    "refresh": "Refresh Data"
+  }
 }

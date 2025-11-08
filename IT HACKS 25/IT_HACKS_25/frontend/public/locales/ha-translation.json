@@ -2,5 +2,31 @@
   "app_title": "Dashboard ɗin IT Hacks 25",
   "upload": "Loda CSV",
   "dashboard": "Allon Kulawa",
-  "welcome": "Barka da zuwa IT Hacks 25 !!!"
+  "reports": "Rahotanni",
+  "analytics": "Bincike",
+  "how_it_works": "Yadda Yake Aiki",
+  "welcome": "Barka da zuwa IT Hacks 25 !!!",
+  "navigation": {
+    "back": "Koma Baya",
+    "home": "Gida"
+  },
+  "room": {
+    "title": "Bayanin Ɗaki",
+    "metrics": "Awowin Ɗaki",
+    "analytics": "Binciken Ɗaki"
+  },
+  "metrics": {
+    "temperature": "Zafi",
+    "humidity": "Ruwa a Iska",
+    "feed_consumption": "Cin Abinci",
+    "water_consumption": "Sha Ruwa",
+    "mortality_rate": "Yawan Mutuwa",
+    "egg_production": "Samar da Kwai"
+  },
+  "actions": {
+    "export": "Fitar da Bayani",
+    "filter": "Tace",
+    "compare": "Kwatanta",
+    "refresh": "Sabunta Bayani"
+  }
 }

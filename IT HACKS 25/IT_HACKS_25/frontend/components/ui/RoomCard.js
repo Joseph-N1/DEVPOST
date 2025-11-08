@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
+import Link from "next/link";
 import TrendIndicator from "./TrendIndicator";
+import { useTranslation } from "react-i18next";
+import { Info } from "lucide-react";
 
 /**
  * RoomCard displays summary stats for a specific poultry room
  * Example props:
+ * id="R001"
  * title="Room A"
  * birds={1000}
  * avgWeight="2.4 kg"
@@ -12,6 +16,7 @@ import TrendIndicator from "./TrendIndicator";
  * trend={+8}
  */
 export default function RoomCard({
+  id,
   title,
   birds,
   avgWeight,
@@ -19,33 +24,96 @@ export default function RoomCard({
   eggsCollected,
   trend,
 }) {
-  return (
-    <div className="bg-white/80 backdrop-blur-sm shadow-md hover:shadow-lg rounded-2xl p-5 border border-green-100 transition-transform hover:-translate-y-1 duration-300">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold text-green-700">{title}</h3>
-        <TrendIndicator value={trend} />
-      </div>
+  const { t } = useTranslation();
+  const [activeTooltip, setActiveTooltip] = useState(null);
+  const tooltips = {
+    birds: t('metrics.total_birds_tooltip', 'Current number of birds in the room'),
+    weight: t('metrics.avg_weight_tooltip', 'Average weight of birds in the room'),
+    mortality: t('metrics.mortality_tooltip', 'Mortality rate in the last 24 hours'),
+    eggs: t('metrics.eggs_tooltip', 'Total eggs collected today')
+  };
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 text-sm text-gray-700">
-        <div>
-          <p className="font-semibold text-gray-800">Birds</p>
-          <p>{birds.toLocaleString()}</p>
+  const Tooltip = ({ content, visible }) => (
+    <div className={`
+      absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2
+      bg-gray-800 text-white text-xs rounded shadow-lg whitespace-nowrap
+      transition-opacity duration-200
+      ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+    `}>
+      {content}
+      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-800" />
+    </div>
+  );
+
+  return (
+    <Link href={`/rooms/${id}`} className="block">
+      <div className="relative bg-white/80 backdrop-blur-sm shadow-md hover:shadow-lg rounded-2xl p-5 border border-green-100 transition-all duration-300 hover:-translate-y-1 hover:bg-white/90">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-green-700">{title}</h3>
+          <TrendIndicator value={trend} />
         </div>
-        <div>
-          <p className="font-semibold text-gray-800">Avg Weight</p>
-          <p>{avgWeight}</p>
-        </div>
-        <div>
-          <p className="font-semibold text-gray-800">Mortality</p>
-          <p>{mortality}</p>
-        </div>
-        <div>
-          <p className="font-semibold text-gray-800">Eggs</p>
-          <p>{eggsCollected}</p>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 gap-3 text-sm text-gray-700">
+          <div className="relative group">
+            <div className="flex items-center">
+              <p className="font-semibold text-gray-800">Birds</p>
+              <button
+                className="ml-1 text-gray-400 hover:text-gray-600"
+                onMouseEnter={() => setActiveTooltip('birds')}
+                onMouseLeave={() => setActiveTooltip(null)}
+              >
+                <Info size={14} />
+              </button>
+            </div>
+            <p>{birds.toLocaleString()}</p>
+            <Tooltip content={tooltips.birds} visible={activeTooltip === 'birds'} />
+          </div>
+          <div className="relative group">
+            <div className="flex items-center">
+              <p className="font-semibold text-gray-800">Avg Weight</p>
+              <button
+                className="ml-1 text-gray-400 hover:text-gray-600"
+                onMouseEnter={() => setActiveTooltip('weight')}
+                onMouseLeave={() => setActiveTooltip(null)}
+              >
+                <Info size={14} />
+              </button>
+            </div>
+            <p>{avgWeight}</p>
+            <Tooltip content={tooltips.weight} visible={activeTooltip === 'weight'} />
+          </div>
+          <div className="relative group">
+            <div className="flex items-center">
+              <p className="font-semibold text-gray-800">Mortality</p>
+              <button
+                className="ml-1 text-gray-400 hover:text-gray-600"
+                onMouseEnter={() => setActiveTooltip('mortality')}
+                onMouseLeave={() => setActiveTooltip(null)}
+              >
+                <Info size={14} />
+              </button>
+            </div>
+            <p>{mortality}</p>
+            <Tooltip content={tooltips.mortality} visible={activeTooltip === 'mortality'} />
+          </div>
+          <div className="relative group">
+            <div className="flex items-center">
+              <p className="font-semibold text-gray-800">Eggs</p>
+              <button
+                className="ml-1 text-gray-400 hover:text-gray-600"
+                onMouseEnter={() => setActiveTooltip('eggs')}
+                onMouseLeave={() => setActiveTooltip(null)}
+              >
+                <Info size={14} />
+              </button>
+            </div>
+            <p>{eggsCollected}</p>
+            <Tooltip content={tooltips.eggs} visible={activeTooltip === 'eggs'} />
+          </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

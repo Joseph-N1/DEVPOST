@@ -2,5 +2,31 @@
   "app_title": "IT Hacks 25 Dashboard",
   "upload": "Bulite CSV",
   "dashboard": "Dashboard",
-  "welcome": "Nnọọ na IT Hacks 25 !!!"
+  "reports": "Akụkọ",
+  "analytics": "Nyocha",
+  "how_it_works": "Otú Ọ Na-arụ Ọrụ",
+  "welcome": "Nnọọ na IT Hacks 25 !!!",
+  "navigation": {
+    "back": "Laghachi",
+    "home": "Ụlọ"
+  },
+  "room": {
+    "title": "Nkọwa Ụlọ",
+    "metrics": "Atụmatụ Ụlọ",
+    "analytics": "Nyocha Ụlọ"
+  },
+  "metrics": {
+    "temperature": "Okpomọkụ",
+    "humidity": "Mmiri n'ikuku",
+    "feed_consumption": "Nri a Riri",
+    "water_consumption": "Mmiri a Ṅụrụ",
+    "mortality_rate": "Ọnụọgụ Ọnwụ",
+    "egg_production": "Mmepụta Akwa"
+  },
+  "actions": {
+    "export": "Bubata Data",
+    "filter": "Szọpụta",
+    "compare": "Tụlee",
+    "refresh": "Megharia Data"
+  }
 }
