@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import component specific styles */
+@import 'components.css';
+
 /* --------------------------
    Base Layer (HTML / Body)
 --------------------------- */
@@ -17,6 +20,46 @@
   /* Dark mode body background */
   .dark body {
     @apply bg-gray-900 text-gray-100;
+  }
+
+  /* Dashboard Layout */
+  .dashboard-content {
+    @apply flex flex-col gap-6 max-w-7xl mx-auto w-full;
+  }
+
+  .dashboard-main-content {
+    @apply bg-white/60 backdrop-blur-md rounded-2xl shadow-sm border border-gray-200 p-6;
+  }
+
+  /* Enhanced Scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Focus States */
+  :focus-visible {
+    outline: 2px solid #22c55e;
+    outline-offset: 2px;
+  }
+
+  /* Selection */
+  ::selection {
+    background: #bbf7d0;
+    color: #166534;
   }
 }
 
@@ -67,13 +110,43 @@ main {
   /* Primary Button */
   .btn-primary {
     @apply bg-[var(--primary)] text-white font-semibold px-4 py-2 rounded-lg 
-           hover:bg-[var(--primary-light)] transition-colors duration-300;
+           hover:bg-[var(--primary-light)] transition-colors duration-300
+           focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   /* Secondary / Outline Button */
   .btn-secondary {
     @apply border border-[var(--primary)] text-[var(--primary)] font-medium px-4 py-2 rounded-lg 
-           hover:bg-[var(--primary)] hover:text-white transition-colors duration-300;
+           hover:bg-[var(--primary)] hover:text-white transition-colors duration-300
+           focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Data Filter Controls */
+  .filter-control {
+    @apply flex flex-wrap gap-3 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6;
+  }
+
+  /* Date Range Picker */
+  .date-picker {
+    @apply px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600
+           focus:outline-none focus:ring-2 focus:ring-[var(--primary)]
+           dark:bg-gray-700 dark:text-white;
+  }
+
+  /* Room Selector */
+  .room-select {
+    @apply px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600
+           focus:outline-none focus:ring-2 focus:ring-[var(--primary)]
+           dark:bg-gray-700 dark:text-white;
+  }
+
+  /* Export Button */
+  .export-btn {
+    @apply flex items-center gap-2 px-4 py-2 bg-[var(--accent)] text-white rounded-lg
+           hover:bg-blue-600 transition-colors duration-300
+           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
   }
 
   /* Dashboard container */

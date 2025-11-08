@@ -1,9 +1,9 @@
 /* DASHBOARD LAYOUT */
 .dashboard-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 24px;
-  padding: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr));
+  gap: clamp(16px, 2vw, 24px);
+  padding: clamp(16px, 2vw, 24px);
   background-color: #f5f7fa;
   min-height: 100vh;
   box-sizing: border-box;
@@ -13,36 +13,135 @@
 .dashboard-header {
   grid-column: 1 / -1;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: clamp(16px, 3vh, 24px);
 }
 
 .dashboard-header h1 {
-  font-size: 1.8rem;
+  font-size: clamp(1.5rem, 3vw, 1.8rem);
   color: #1e293b;
+  flex: 1;
+  min-width: 200px;
 }
 
-.dashboard-header .filter-controls {
+/* DATA MANAGEMENT CONTROLS */
+.data-controls {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
+  align-items: center;
 }
 
-.dashboard-header select,
-.dashboard-header button {
+.date-range {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.date-range input {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  min-width: 120px;
+}
+
+.room-filter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.room-filter select {
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
   background-color: white;
   cursor: pointer;
+  min-width: 120px;
 }
 
-.dashboard-header button {
-  background-color: #3b82f6;
-  color: white;
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.export-button,
+.compare-button {
+  padding: 8px 16px;
+  border-radius: 8px;
   border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s ease;
 }
 
-.dashboard-header button:hover {
+.export-button {
+  background-color: #3b82f6;
+}
+
+.export-button:hover {
   background-color: #2563eb;
+}
+
+.compare-button {
+  background-color: #059669;
+}
+
+.compare-button:hover {
+  background-color: #047857;
+}
+
+/* COMPARISON VIEW */
+.comparison-container {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+  gap: 24px;
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  display: none;
+}
+
+.comparison-container.active {
+  display: grid;
+}
+
+/* RESPONSIVE ADJUSTMENTS */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .data-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-range,
+  .room-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-buttons {
+    justify-content: stretch;
+  }
+
+  .export-button,
+  .compare-button {
+    flex: 1;
+    justify-content: center;
+  }
 }

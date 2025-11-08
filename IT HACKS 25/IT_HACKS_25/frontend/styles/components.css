@@ -1,0 +1,198 @@
+/* Comparison View Styles */
+.comparison-container {
+  @apply bg-white rounded-2xl shadow-sm border border-gray-200;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 500px;
+}
+
+.comparison-header {
+  @apply p-4 border-b border-gray-200 bg-gray-50;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comparison-content-container {
+  @apply flex-1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.comparison-panel {
+  @apply bg-white;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.comparison-panel-header {
+  @apply p-4 border-b border-gray-100 bg-gray-50/50;
+}
+
+.comparison-panel-content {
+  @apply p-4;
+  flex: 1;
+  overflow: auto;
+}
+
+.comparison-splitter {
+  @apply bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center;
+  cursor: col-resize;
+  user-select: none;
+}
+
+.splitter-vertical {
+  width: 8px;
+  margin: 0 -4px;
+  z-index: 10;
+}
+
+.splitter-horizontal {
+  height: 8px;
+  margin: -4px 0;
+  z-index: 10;
+}
+
+/* Chart Control Styles */
+.chart-controls {
+  @apply flex items-center gap-2 p-2 bg-gray-50/80 backdrop-blur rounded-lg border border-gray-200;
+}
+
+.chart-control-btn {
+  @apply p-1.5 text-gray-600 hover:text-gray-900 rounded-md hover:bg-white/80 
+         transition-colors border border-transparent hover:border-gray-200
+         focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1;
+}
+
+.chart-control-btn[disabled] {
+  @apply opacity-50 cursor-not-allowed hover:bg-transparent hover:text-gray-600;
+}
+
+/* Filter Control Styles */
+.filter-control {
+  @apply space-y-4 p-4 bg-white rounded-xl shadow-sm border border-gray-200;
+}
+
+.date-picker {
+  @apply px-3 py-2 rounded-lg border border-gray-300 text-sm
+         focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500
+         disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.room-select-container {
+  @apply relative;
+}
+
+.room-select {
+  @apply w-full px-3 py-2 text-sm border border-gray-300 rounded-lg
+         focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500
+         bg-white cursor-pointer;
+  min-width: 200px;
+}
+
+/* Metric Selection */
+.metric-btn {
+  @apply px-3 py-1 text-sm rounded-full border transition-colors;
+}
+
+.metric-btn.selected {
+  @apply bg-green-100 text-green-700 border-green-200;
+}
+
+.metric-btn.unselected {
+  @apply bg-gray-100 text-gray-600 border-gray-200 hover:bg-green-50;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .filter-control {
+    @apply space-y-6;
+  }
+
+  .date-range {
+    @apply flex-col items-stretch gap-2;
+  }
+
+  .room-select {
+    @apply w-full;
+  }
+
+  .metric-btn {
+    @apply w-full justify-center;
+  }
+
+  .chart-controls {
+    @apply flex-wrap justify-center;
+  }
+
+  .comparison-container {
+    min-height: 400px;
+  }
+
+  .comparison-header {
+    @apply flex-col gap-4 items-stretch;
+  }
+
+  .comparison-content-container.flex-row {
+    @apply flex-col;
+  }
+
+  .comparison-panel {
+    flex: 1 !important;
+  }
+
+  .splitter-vertical {
+    @apply hidden;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .filter-control {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .date-picker,
+  .room-select {
+    @apply bg-gray-800 border-gray-600 text-white;
+  }
+
+  .metric-btn.selected {
+    @apply bg-green-900 text-green-100 border-green-700;
+  }
+
+  .metric-btn.unselected {
+    @apply bg-gray-700 text-gray-200 border-gray-600 hover:bg-green-900;
+  }
+
+  .chart-controls {
+    @apply bg-gray-800/80 border-gray-700;
+  }
+
+  .chart-control-btn {
+    @apply text-gray-300 hover:text-white hover:bg-gray-700;
+  }
+
+  .comparison-container {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .comparison-header {
+    @apply bg-gray-900 border-gray-700;
+  }
+
+  .comparison-panel {
+    @apply bg-gray-800;
+  }
+
+  .comparison-panel-header {
+    @apply bg-gray-900/50 border-gray-700;
+  }
+
+  .comparison-splitter {
+    @apply bg-gray-700 hover:bg-gray-600;
+  }
+}
