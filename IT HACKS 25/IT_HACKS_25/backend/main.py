@@ -1,21 +1,32 @@
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import upload, analysis
+import logging
 
-app = FastAPI(title="Poultry Tracker API - Starter")
+app = FastAPI()
+logger = logging.getLogger("uvicorn.error")
+
+# Add CORS so frontend (http://localhost:3000) can call the API during dev
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://backend:8000",  # when frontend runs inside docker, backend hostname
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=origins,        # use ["*"] temporarily for testing if needed
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
-app.include_router(upload.router, prefix="/upload")
-app.include_router(analysis.router, prefix="/analysis")
-
-@app.get('/')
-def root():
-    return {'message': 'Poultry Tracker API - running'}
+# Register routers (ensure import path matches your project structure)
+try:
+    # routers.upload should exist at backend/routers/upload.py
+    from routers.upload import router as upload_router
+    app.include_router(upload_router)
+    logger.info("Upload router included")
+except Exception as e:
+    # Log the import error so it is visible in container logs
+    logger.exception("Failed to include upload router: %s", e)
+    raise
