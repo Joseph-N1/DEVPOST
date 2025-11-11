@@ -27,6 +27,14 @@ try:
     app.include_router(upload_router)
     logger.info("Upload router included")
 except Exception as e:
-    # Log the import error so it is visible in container logs
     logger.exception("Failed to include upload router: %s", e)
+    raise
+
+# Include analysis router under /analysis so frontend calls match /analysis/rooms
+try:
+    from routers.analysis import router as analysis_router
+    app.include_router(analysis_router, prefix="/analysis")
+    logger.info("Analysis router included at /analysis")
+except Exception as e:
+    logger.exception("Failed to include analysis router: %s", e)
     raise
