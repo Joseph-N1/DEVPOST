@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc build-essen
 
 # copy only requirements first to leverage build cache
 COPY requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --default-timeout=180 -r requirements.txt || pip install --no-cache-dir --default-timeout=180 -r requirements.txt
 
 # copy source
 COPY . /app

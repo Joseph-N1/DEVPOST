@@ -1,22 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
-import DashboardLayout from "@/components/layout/DashboardLayout";
-import DashboardHeader from "@/components/ui/DashboardHeader";
-import DashboardSection from "@/components/ui/DashboardSection";
-import GlassCard from "@/components/ui/GlassCard";
-import AnalyticsChart from "@/components/ui/AnalyticsChart";
-import SectionTitle from "@/components/ui/SectionTitle";
-import { LoadingCard } from "@/components/ui/Loading";
-import { 
-  BarChart3, DollarSign, LineChart, TrendingUp, 
-  AlertTriangle, Egg, Thermometer, Droplets 
-} from "lucide-react";
+import Layout from '@/components/layout/DashboardLayout';
+import AnalyticsChart from '@/components/ui/AnalyticsChart';
+import Card from '@/components/ui/Card';
 
 export default function AnalyticsPage() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [sample, setSample] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,6 +27,11 @@ export default function AnalyticsPage() {
     };
 
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    // fallback: load sample CSV or mock if API not ready
+    // fetch('/api/data/preview/sample_upload_expanded.csv') ...
   }, []);
 
   // Sample data structure based on sample_upload_expanded.csv
@@ -67,24 +65,39 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <DashboardHeader title={t('analytics.title', 'Analytics Dashboard')} />
-        <LoadingCard />
-      </DashboardLayout>
+      <Layout>
+        <main className="page-container">
+          <header className="dashboard-header mb-4">
+            <h1 className="text-xl md:text-2xl font-bold">{t('analytics.title', 'Analytics Dashboard')}</h1>
+          </header>
+          <Card className="card-min-h">
+            {/* Loading state can be a spinner or skeleton component */}
+            <div className="animate-pulse flex space-x-4">
+              <div className="flex-1 py-4">
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </div>
+          </Card>
+        </main>
+      </Layout>
     );
   }
 
   if (error) {
     return (
-      <DashboardLayout>
-        <DashboardHeader title={t('analytics.title', 'Analytics Dashboard')} />
-        <GlassCard>
-          <div className="p-6 text-center text-red-600">
-            <AlertTriangle className="w-10 h-10 mx-auto mb-4" />
-            <p>{t('common.error', 'Error')}: {error}</p>
-          </div>
-        </GlassCard>
-      </DashboardLayout>
+      <Layout>
+        <main className="page-container">
+          <header className="dashboard-header mb-4">
+            <h1 className="text-xl md:text-2xl font-bold">{t('analytics.title', 'Analytics Dashboard')}</h1>
+          </header>
+          <Card className="card-min-h">
+            <div className="p-6 text-center text-red-600">
+              <p>{t('common.error', 'Error')}: {error}</p>
+            </div>
+          </Card>
+        </main>
+      </Layout>
     );
   }
 
@@ -154,130 +167,25 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
+    <Layout>
+      <main className="page-container">
+        <header className="dashboard-header mb-4">
+          <h1 className="text-xl md:text-2xl font-bold">{t('analytics.title', 'Analytics Dashboard')}</h1>
+          {/* filter controls will be responsive */}
+        </header>
 
-        {/* ✅ Header */}
-        <DashboardHeader
-          title={t('analytics.overview', 'Analytics Overview')}
-          subtitle={t('analytics.subtitle', 'Visualize farm performance, profits, and efficiency')}
-          actionLabel={t('common.uploadData', 'Upload New Data')}
-          actionHref="/upload"
-        />
+        <section className="dashboard-grid">
+          <Card className="card-min-h">
+            {/* small metrics */}
+          </Card>
 
-        {/* ✅ Summary Metrics */}
-        <DashboardSection 
-          title={t('analytics.sections.financial.title', 'Key Financial Metrics')} 
-          subtitle={t('analytics.sections.financial.subtitle', 'Overall farm performance at a glance')}
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {summaryMetrics.map((metric, idx) => (
-              <GlassCard key={idx}>
-                <div className="flex items-center gap-3 p-4">
-                  <div className="bg-white/70 backdrop-blur-sm p-2 rounded-full border border-green-100 shadow-sm">
-                    {metric.icon}
-                  </div>
-                  <div>
-                    <h4 className="text-sm text-gray-600">{metric.label}</h4>
-                    <p className="text-xl font-semibold text-green-800">{metric.value}</p>
-                    <span className="text-xs text-green-600 font-medium">{metric.trend}</span>
-                  </div>
-                </div>
-              </GlassCard>
-            ))}
+          <div className="responsive-card chart-card">
+            <AnalyticsChart title="Weight over time" labels={[]} data={[]} datasetLabel="Avg weight" />
           </div>
-        </DashboardSection>
 
-        {/* Performance Charts Section */}
-        <DashboardSection title="Performance Metrics" subtitle="Key performance indicators over time">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <GlassCard>
-              <AnalyticsChart
-                title="Weight Progression"
-                labels={chartData.weight.labels}
-                data={chartData.weight.data}
-                datasetLabel={chartData.weight.label}
-                type="line"
-              />
-            </GlassCard>
-            <GlassCard>
-              <AnalyticsChart
-                title="Feed Consumption"
-                labels={chartData.feed.labels}
-                data={chartData.feed.data}
-                datasetLabel={chartData.feed.label}
-                type="bar"
-              />
-            </GlassCard>
-          </div>
-        </DashboardSection>
-
-        {/* Cost and Mortality Trends */}
-        <DashboardSection title="Cost & Health Metrics" subtitle="Track expenses and bird health">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <GlassCard>
-              <AnalyticsChart
-                title="Weekly Costs"
-                labels={chartData.costs.labels}
-                data={chartData.costs.data}
-                datasetLabel={chartData.costs.label}
-                type="line"
-              />
-            </GlassCard>
-            <GlassCard>
-              <AnalyticsChart
-                title="Mortality Rate"
-                labels={chartData.mortality.labels}
-                data={chartData.mortality.data}
-                datasetLabel={chartData.mortality.label}
-                type="line"
-              />
-            </GlassCard>
-          </div>
-        </DashboardSection>
-
-        {/* ✅ Room-Level Insights */}
-        <DashboardSection title="Room Performance Insights" subtitle="Breakdown of room-based production, eggs, and mortality rates">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {roomPerformance.map((r, i) => (
-              <div
-                key={i}
-                className={`bg-gradient-to-br ${r.color} rounded-2xl p-6 shadow-md hover:shadow-lg transition-all border border-green-100`}
-              >
-                <h3 className="text-lg font-semibold text-green-700 mb-2">{r.room}</h3>
-                <p className="text-gray-700 text-sm mb-1">
-                  <strong>Profit:</strong> {r.profit}
-                </p>
-                <p className="text-gray-700 text-sm mb-1">
-                  <strong>Birds:</strong> {r.birds}
-                </p>
-                <p className="text-gray-700 text-sm mb-1">
-                  <strong>Weight:</strong> {r.weight}
-                </p>
-                <p className="text-gray-700 text-sm">
-                  <strong>Mortality:</strong> {r.mortality}
-                </p>
-              </div>
-            ))}
-          </div>
-        </DashboardSection>
-
-        {/* ✅ Forecast Section */}
-        <DashboardSection title="Forecast & Projections" subtitle="Anticipate future yield and egg production rates">
-          <GlassCard>
-            <div className="p-6 text-center space-y-4">
-              <BarChart3 className="w-10 h-10 text-green-700 mx-auto" />
-              <p className="text-lg text-gray-700">
-                Projected growth indicates a <span className="font-semibold text-green-600">10-15%</span> increase in profitability
-                with optimized feeding schedules.
-              </p>
-              <p className="text-sm text-gray-500">
-                Use insights from the previous 4 weeks to fine-tune your next feeding and production plan.
-              </p>
-            </div>
-          </GlassCard>
-        </DashboardSection>
-      </div>
-    </DashboardLayout>
+          {/* more cards/charts */}
+        </section>
+      </main>
+    </Layout>
   );
 }

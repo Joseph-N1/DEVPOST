@@ -1,12 +1,15 @@
 import React from "react";
 import { motion } from "framer-motion";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import Layout from "@/components/layout/DashboardLayout";
+import { useTranslation } from "react-i18next";
 import DashboardHeader from "@/components/ui/DashboardHeader";
 import DashboardSection from "@/components/ui/DashboardSection";
 import GlassCard from "@/components/ui/GlassCard";
 import { BarChart3, Upload, LineChart, Egg, TrendingUp, FileSpreadsheet } from "lucide-react";
 
 export default function HowPage() {
+  const { t } = useTranslation();
+
   const steps = [
     { icon: <Upload className="w-6 h-6 text-green-700" />, title: "1. Upload Data", desc: "Start by uploading your CSV file containing poultry data." },
     { icon: <FileSpreadsheet className="w-6 h-6 text-green-700" />, title: "2. Data Processing", desc: "The system processes your CSV to extract key metrics." },
@@ -74,144 +77,19 @@ export default function HowPage() {
   ];
 
   return (
-    <DashboardLayout>
-      <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
-        <DashboardHeader
-          title="How It Works"
-          subtitle="Your guide to effective poultry farm management"
-          actionLabel="Go to Dashboard"
-          actionHref="/dashboard"
-        />
+    <Layout>
+      <main className="page-container">
+        <header className="dashboard-header mb-4">
+          <h1 className="text-xl md:text-2xl font-bold">{t('how.title', 'How it works')}</h1>
+        </header>
 
-        {/* Core Features */}
-        <DashboardSection
-          title="Core Features"
-          subtitle="Essential tools for farm management"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <GlassCard className="h-full">
-                  <div className="p-6 space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-green-50 p-2 rounded-lg">
-                        {feature.icon}
-                      </div>
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {feature.title}
-                      </h3>
-                    </div>
-                    <p className="text-gray-600">{feature.description}</p>
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-gray-700">Key Steps:</h4>
-                      <ul className="space-y-1">
-                        {feature.steps.map((step, idx) => (
-                          <li key={idx} className="flex items-start space-x-2 text-sm text-gray-600">
-                            <span className="text-green-500 font-bold">•</span>
-                            <span>{step}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </GlassCard>
-              </motion.div>
-            ))}
+        <section className="dashboard-grid">
+          <div className="responsive-card card-min-h">
+            <h2 className="text-base md:text-lg font-semibold">{t('how.quickstart', 'Quick Start')}</h2>
+            <p className="text-sm md:text-base">{t('how.quickstart_desc', 'Upload data, view analytics, generate reports.')}</p>
           </div>
-        </DashboardSection>
-
-        {/* Best Practices */}
-        <DashboardSection
-          title="Best Practices"
-          subtitle="Maximize the value of your farm data"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {bestPractices.map((practice, index) => (
-              <GlassCard key={index}>
-                <div className="p-6 space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {practice.title}
-                  </h3>
-                  <ul className="space-y-2">
-                    {practice.items.map((item, idx) => (
-                      <li key={idx} className="flex items-start space-x-2 text-gray-600">
-                        <span className="text-green-500 font-bold">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </GlassCard>
-            ))}
-          </div>
-        </DashboardSection>
-
-        {/* Getting Started Guide */}
-        <DashboardSection
-          title="Quick Start Guide"
-          subtitle="Start managing your farm in minutes"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <GlassCard>
-                  <div className="flex flex-col items-center text-center p-6 space-y-4">
-                    <div className="bg-green-100 rounded-full p-3">{step.icon}</div>
-                    <h3 className="text-lg font-semibold text-green-800">{step.title}</h3>
-                    <p className="text-gray-600 text-sm">{step.desc}</p>
-                  </div>
-                </GlassCard>
-              </motion.div>
-            ))}
-          </div>
-        </DashboardSection>
-
-        {/* FAQ Section */}
-        <DashboardSection
-          title="Frequently Asked Questions"
-          subtitle="Quick answers to common questions"
-        >
-          <GlassCard>
-            <div className="divide-y divide-gray-200">
-              {[
-                {
-                  q: "How often should I update my farm data?",
-                  a: "We recommend updating your data daily for the most accurate analytics and insights."
-                },
-                {
-                  q: "What file formats are supported for data upload?",
-                  a: "Currently, we support CSV files with specific column headers. Check the upload page for format details."
-                },
-                {
-                  q: "Can I export my analytics data?",
-                  a: "Yes, you can export data in CSV, PDF, or JSON formats from the Reports page."
-                },
-                {
-                  q: "How do I interpret the analytics graphs?",
-                  a: "Each graph comes with tooltips and legends. Hover over data points for detailed information."
-                }
-              ].map((faq, index) => (
-                <div key={index} className="p-6">
-                  <h4 className="font-medium text-gray-900 mb-2">{faq.q}</h4>
-                  <p className="text-gray-600">{faq.a}</p>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
-        </DashboardSection>
-      </div>
-    </DashboardLayout>
+        </section>
+      </main>
+    </Layout>
   );
 }

@@ -139,3 +139,26 @@ Please open the repo in VS Code and start the services. Good luck with IT HACKS 
 3. Complete localization:
    - Fill missing translations
    - Add language switcher UI
+
+# Responsive Changes (feature/responsive-mobile-desktop)
+
+Summary:
+
+- Added mobile-first responsive helper classes in frontend/styles/globals.css
+- Added responsive grid & card rules in frontend/styles/dashboard.css
+- Added chart wrappers and responsive tweaks in frontend/styles/charts.css
+- Ensured Tailwind breakpoints exist in frontend/tailwind.config.js
+- Wrapped chart components with responsive containers and `maintainAspectRatio: false`
+
+How to revert:
+
+- Checkout previous commit or remove branch feature/responsive-mobile-desktop
+
+Testing checklist:
+
+- npm install
+- npm run dev
+- Open /analytics, /reports, /how
+- Test widths: 360px, 412px, 768px, 1024px, 1366px
+- Verify no horizontal scrollbar at 360px & 1366px
+- Ensure charts preserve aspect ratio

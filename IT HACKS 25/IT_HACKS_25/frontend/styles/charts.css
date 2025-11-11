@@ -1,9 +1,11 @@
 /* CHART CARD STYLING */
 .chart-card {
-  background-color: #ffffff;
-  border-radius: 16px;
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: transparent;
+  box-sizing: border-box;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  padding: clamp(16px, 2vw, 24px);
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -34,8 +36,10 @@
 
 .chart-controls {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .chart-control-btn {
@@ -157,4 +161,31 @@
     border-color: #334155;
     color: #f1f5f9;
   }
+}
+
+/* Chart.js canvas should fill the parent */
+.chart-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.chart-wrapper canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* Legend and controls layout */
+.chart-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 768px) {
+  .chart-card { padding: 1rem; }
+  .chart-controls { gap: 1rem; }
 }

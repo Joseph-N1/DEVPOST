@@ -181,3 +181,68 @@ main {
     @apply shadow-md dark:shadow-lg;
   }
 }
+
+/* === responsive helpers (mobile-first) === */
+:root {
+  --container-max: 1200px;
+  --card-min-height: 6rem;
+  --touch-target: 2.75rem; /* ~44px */
+}
+
+/* Make images responsive */
+.img-responsive {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Responsive card wrapper */
+.responsive-card {
+  width: 100%;
+  min-height: var(--card-min-height);
+  padding: 0.75rem; /* 12px mobile */
+  border-radius: 0.75rem;
+  background: inherit;
+  box-sizing: border-box;
+}
+
+/* Chart container with aspect ratio 16:9 (mobile-first) */
+.chart-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  position: relative;
+}
+
+/* Touch target helper for buttons/controls */
+.touch-target {
+  min-height: var(--touch-target);
+  min-width: var(--touch-target);
+  padding: 0.375rem 0.75rem;
+}
+
+/* Page container padding */
+.page-container {
+  padding-left: 1rem;  /* mobile px-4 equivalent */
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 100%;
+}
+
+/* Larger view overrides */
+@media (min-width: 640px) { /* sm */
+  .responsive-card { padding: 0.875rem; }
+  .page-container { padding-left: 1.25rem; padding-right: 1.25rem; }
+}
+
+@media (min-width: 768px) { /* md */
+  .page-container { padding-left: 2rem; padding-right: 2rem; max-width: var(--container-max); }
+  .responsive-card { padding: 1rem; }
+  .chart-container { aspect-ratio: 16 / 9; }
+}
+
+@media (min-width: 1024px) { /* lg */
+  .responsive-card { padding: 1.25rem; }
+  .chart-container { aspect-ratio: 16 / 7; } /* slightly wider on desktop */
+}
