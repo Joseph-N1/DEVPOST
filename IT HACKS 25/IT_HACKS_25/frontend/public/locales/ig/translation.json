@@ -18,15 +18,23 @@
   "metrics": {
     "temperature": "Okpomọkụ",
     "humidity": "Mmiri n'ikuku",
-    "feed_consumption": "Nri a Riri",
+    "feed_consumption": "Nri a riri",
     "water_consumption": "Mmiri a Ṅụrụ",
     "mortality_rate": "Ọnụọgụ Ọnwụ",
-    "egg_production": "Mmepụta Akwa"
+    "egg_production": "Mmepụta Akwa",
+    "total_birds_tooltip": "Ọnụọgụ anụmanụ dị ugbu a n'ụlọ",
+    "avg_weight_tooltip": "N’arọzi nke anụmanụ n’ụlọ",
+    "mortality_tooltip": "Ọnụọgụ ọnwụ n’ime awa 24 gara aga",
+    "eggs_tooltip": "Ọnụọgụ akwa e kpokọtara taa",
+    "temperature_tooltip": "Ọnọdụ okpomọkụ ugbu a n'ụlọ",
+    "humidity_tooltip": "Ọnọdụ mmiri n'ikuku ugbu a n'ụlọ",
+    "feed_tooltip": "Nri anụmanụ n’ụbọchị",
+    "water_tooltip": "Mmiri anụmanụ n’ụbọchị"
   },
   "actions": {
     "export": "Bubata Data",
     "filter": "Szọpụta",
     "compare": "Tụlee",
-    "refresh": "Megharia Data"
+    "refresh": "Megharịa Data"
   }
 }

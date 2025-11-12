@@ -21,7 +21,15 @@
     "feed_consumption": "Cin Abinci",
     "water_consumption": "Sha Ruwa",
     "mortality_rate": "Yawan Mutuwa",
-    "egg_production": "Samar da Kwai"
+    "egg_production": "Samar da Kwai",
+    "total_birds_tooltip": "Jimlar kaji a ɗakin",
+    "avg_weight_tooltip": "Matsakaicin nauyin kaji a ɗakin",
+    "mortality_tooltip": "Kimar mutuwa cikin sa’o’i 24",
+    "eggs_tooltip": "Jimlar ƙwai da aka tara yau",
+    "temperature_tooltip": "Yanayin zafin ɗakin yanzu",
+    "humidity_tooltip": "Matsayin danshi a ɗakin yanzu",
+    "feed_tooltip": "Abincin da kaza ke ci a rana",
+    "water_tooltip": "Ruwan da kaza ke sha a rana"
   },
   "actions": {
     "export": "Fitar da Bayani",
