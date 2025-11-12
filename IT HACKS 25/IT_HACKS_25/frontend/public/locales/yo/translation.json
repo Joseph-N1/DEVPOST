@@ -18,10 +18,18 @@
   "metrics": {
     "temperature": "Igbona",
     "humidity": "Omi ninu afẹfẹ",
-    "feed_consumption": "Jijade Ounjẹ",
-    "water_consumption": "Jijade Omi",
+    "feed_consumption": "Jijẹ Ounjẹ",
+    "water_consumption": "Mimu Omi",
     "mortality_rate": "Oṣuwọn Iku",
-    "egg_production": "Iṣelọpọ Ẹyin"
+    "egg_production": "Iṣelọpọ Ẹyin",
+    "total_birds_tooltip": "Apapọ iye adiye ninu yara",
+    "avg_weight_tooltip": "Iwọn apapọ awọn adiye ninu yara",
+    "mortality_tooltip": "Oṣuwọn iku ninu wakati 24 to kọja",
+    "eggs_tooltip": "Lapapọ awọn ẹyin ti a kó jọ loni",
+    "temperature_tooltip": "Igbona lọwọlọwọ ninu yara",
+    "humidity_tooltip": "Ipele omi afẹfẹ lọwọlọwọ",
+    "feed_tooltip": "Ounjẹ ti adiye kọọkan jẹ lojoojumọ",
+    "water_tooltip": "Omi ti adiye kọọkan mu lojoojumọ"
   },
   "actions": {
     "export": "Ṣe igbejade Data",
