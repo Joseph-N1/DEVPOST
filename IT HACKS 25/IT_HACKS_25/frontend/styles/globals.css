@@ -246,3 +246,125 @@ main {
   .responsive-card { padding: 1.25rem; }
   .chart-container { aspect-ratio: 16 / 7; } /* slightly wider on desktop */
 }
+
+/* === New utilities for analytics enhancements === */
+
+/* Chart wrapper with responsive container */
+.chart-container-wrapper {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Multi-chart grid layout */
+.multi-chart-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .multi-chart-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .multi-chart-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Fade-in-up animation for cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Stagger animation delays for multiple items */
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+.animate-delay-300 { animation-delay: 0.3s; }
+.animate-delay-400 { animation-delay: 0.4s; }
+
+/* Hover scale micro-interaction */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* Typography responsive scale */
+.text-responsive-sm {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .text-responsive-sm {
+    font-size: 1rem; /* 16px */
+    line-height: 1.5rem;
+  }
+}
+
+.text-responsive-base {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .text-responsive-base {
+    font-size: 1.125rem; /* 18px */
+    line-height: 1.75rem;
+  }
+}
+
+.text-responsive-lg {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.75rem;
+}
+
+@media (min-width: 768px) {
+  .text-responsive-lg {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive-lg {
+    font-size: 1.5rem; /* 24px */
+    line-height: 2rem;
+  }
+}
+
+/* Prevent text overflow with ellipsis */
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

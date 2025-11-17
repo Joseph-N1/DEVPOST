@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 import pandas as pd
 import os
 
-router = APIRouter(prefix="/upload", tags=["upload"])
+router = APIRouter(tags=["upload"])
 
 # Base data directory (backend/data)
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
