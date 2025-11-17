@@ -53,13 +53,14 @@ export default function ChartWrapper({
 
   const defaultOptions = {
     responsive: true,
-    maintainAspectRatio: false,
+    maintainAspectRatio: true,
+    aspectRatio: 16 / 9,
     plugins: {
       legend: {
         position: 'top',
         labels: {
           usePointStyle: true,
-          padding: 15,
+          padding: 12,
           font: {
             size: 12
           }
@@ -86,7 +87,10 @@ export default function ChartWrapper({
         bodyFont: {
           size: 13
         },
-        cornerRadius: 8
+        cornerRadius: 8,
+        enabled: true,
+        mode: 'index',
+        intersect: false
       }
     },
     scales: type !== 'pie' ? {
@@ -94,11 +98,21 @@ export default function ChartWrapper({
         beginAtZero: true,
         grid: {
           color: 'rgba(0, 0, 0, 0.05)'
+        },
+        ticks: {
+          font: {
+            size: 11
+          }
         }
       },
       x: {
         grid: {
           display: false
+        },
+        ticks: {
+          font: {
+            size: 11
+          }
         }
       }
     } : undefined,

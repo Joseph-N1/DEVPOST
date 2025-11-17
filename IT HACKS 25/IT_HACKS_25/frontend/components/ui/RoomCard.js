@@ -46,16 +46,16 @@ export default function RoomCard({
   );
 
   return (
-    <Link href={`/rooms/${id}`} className="block">
-      <div className="relative bg-white/80 backdrop-blur-sm shadow-md hover:shadow-lg rounded-2xl p-5 border border-green-100 transition-all duration-300 hover:-translate-y-1 hover:bg-white/90">
+    <Link href={`/rooms/${id}`} className="block h-full">
+      <div className="flex flex-col justify-between h-full relative bg-white/80 backdrop-blur-sm shadow-md hover:shadow-lg rounded-2xl p-4 sm:p-5 border border-green-100 transition-all duration-300 hover:-translate-y-1 hover:bg-white/90 hover:scale-[1.02]">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-green-700">{title}</h3>
+        <header className="flex items-center justify-between mb-3">
+          <h3 className="text-base sm:text-lg font-semibold text-green-700 truncate">{title}</h3>
           <TrendIndicator value={trend} />
-        </div>
+        </header>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3 text-sm text-gray-700">
+        <div className="flex-1 grid grid-cols-2 gap-3 text-sm text-gray-700">
           <div className="relative group">
             <div className="flex items-center">
               <p className="font-semibold text-gray-800">Birds</p>

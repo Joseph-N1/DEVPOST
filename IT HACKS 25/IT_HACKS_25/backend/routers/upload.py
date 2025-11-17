@@ -84,7 +84,7 @@ async def list_csv_files():
 @router.get('/preview/{file_path:path}')
 async def preview_csv(
     file_path: str,
-    rows: int = Query(default=5, ge=1, le=100)
+    rows: int = Query(default=5, ge=1, le=3000)
 ):
     """Preview the contents of a CSV file."""
     try:

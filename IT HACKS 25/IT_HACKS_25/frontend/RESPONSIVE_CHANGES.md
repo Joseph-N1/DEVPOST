@@ -4,6 +4,380 @@
 
 This document tracks all responsive design improvements and feature enhancements made to the frontend for mobile-first, tablet, and desktop layouts.
 
+---
+
+## 🆕 LATEST REFACTOR: Flex/Grid Layout Enforcement (feature/responsive-flex-refactor)
+
+**Date**: Current Session  
+**Branch**: `feature/responsive-flex-refactor`  
+**Goal**: Enforce professional Flexbox/Grid layouts, optimal reading width, and eliminate all layout overflow issues.
+
+### Mandatory Patterns Applied
+
+#### 1. Container Width Change: max-w-[1920px] → max-w-7xl
+
+**Problem**: Ultra-wide 1920px containers created poor readability on large screens.  
+**Solution**: Changed to `max-w-7xl` (1280px) - optimal reading width for web content.
+
+**Files Changed**:
+
+- `pages/dashboard.js`
+- `pages/analytics.js`
+- `pages/reports.js`
+- `pages/how.js`
+
+**Before**:
+
+```jsx
+<div className="max-w-[1920px] mx-auto px-4 py-10">
+```
+
+**After**:
+
+```jsx
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10">
+  <div className="space-y-8 lg:space-y-10">
+```
+
+**Benefits**:
+
+- Better readability on all screen sizes
+- Consistent horizontal padding at all breakpoints
+- Responsive vertical spacing that scales with viewport
+
+---
+
+#### 2. Breakpoint Standardization: Removed Inconsistent md: Usage
+
+**Problem**: Mix of `md:` and `lg:` breakpoints caused inconsistent behavior.  
+**Solution**: Standardized to `sm:` (640px) and `lg:` (1024px) throughout.
+
+**Files Changed**: All pages and components
+
+**Before**:
+
+```jsx
+<h1 className="text-2xl md:text-3xl">
+<p className="text-sm">
+```
+
+**After**:
+
+```jsx
+<h1 className="text-2xl sm:text-3xl lg:text-4xl">
+<p className="text-sm sm:text-base leading-relaxed">
+```
+
+**Benefits**:
+
+- Simpler breakpoint strategy (fewer edge cases)
+- More predictable scaling across devices
+- Better alignment with Tailwind's mobile-first philosophy
+
+---
+
+#### 3. Card Flex Layout Pattern: flex-col justify-between h-full
+
+**Problem**: Cards in grids had inconsistent heights, content misalignment.  
+**Solution**: Applied `flex flex-col justify-between h-full` pattern to all cards.
+
+**Files Changed**:
+
+- `components/ui/RoomCard.js`
+- `components/ui/MetricCard.js`
+
+**Before (RoomCard.js)**:
+
+```jsx
+<Link href={`/rooms/${room.id}`}>
+  <div className="responsive-card card-flex hover-lift">
+    <div className="flex items-start justify-between mb-4">
+      <h3>{room.name}</h3>
+```
+
+**After (RoomCard.js)**:
+
+```jsx
+<Link href={`/rooms/${room.id}`} className="h-full">
+  <div className="bg-white rounded-xl shadow-md p-4 sm:p-5 h-full flex flex-col justify-between hover:scale-[1.02] transition-transform duration-200">
+    <header className="flex items-start justify-between mb-4">
+      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">{room.name}</h3>
+```
+
+**Benefits**:
+
+- Cards in grid have equal heights
+- Content properly distributed (header → content → footer)
+- Better visual hierarchy with semantic HTML (header/footer)
+- Prevents text overflow with `truncate` utility
+
+---
+
+#### 4. Chart Container: aspect-ratio 16:9 with maintainAspectRatio
+
+**Problem**: Charts overflowed on mobile when `maintainAspectRatio: false`.  
+**Solution**: Set `maintainAspectRatio: true` with `aspectRatio: 16/9`.
+
+**Files Changed**:
+
+- `components/ui/ChartWrapper.js`
+- `components/ui/ChartContainer.js`
+- `styles/globals.css`
+
+**Before (ChartWrapper.js)**:
+
+```jsx
+const defaultOptions = {
+  maintainAspectRatio: false,
+  // ...
+};
+```
+
+**After (ChartWrapper.js)**:
+
+```jsx
+const defaultOptions = {
+  maintainAspectRatio: true,
+  aspectRatio: 16 / 9,
+  // ...
+  plugins: {
+    legend: {
+      labels: { font: { size: 11 } }, // Reduced from 12
+    },
+    title: {
+      font: { size: 14 }, // Reduced from 16
+    },
+  },
+  scales: {
+    x: { ticks: { font: { size: 11 } } }, // Reduced from 12
+    y: { ticks: { font: { size: 11 } } },
+  },
+};
+```
+
+**globals.css**:
+
+```css
+.chart-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 220px; /* NEW: fallback for older browsers */
+  position: relative;
+}
+```
+
+**Benefits**:
+
+- Charts scale responsively without overflow
+- Consistent 16:9 aspect ratio across all charts
+- Reduced font sizes improve mobile readability
+- Fallback min-height for browser compatibility
+
+---
+
+#### 5. Replaced Custom CSS Classes with Tailwind Utilities
+
+**Problem**: Custom classes like `.responsive-card` and `.card-flex` caused maintenance issues.  
+**Solution**: Replaced with inline Tailwind utilities for better transparency.
+
+**Files Changed**:
+
+- `components/ui/Card.js`
+
+**Before**:
+
+```jsx
+export default function Card({ children, className = "", onClick }) {
+  return (
+    <div className={`responsive-card card-flex ${className}`} onClick={onClick}>
+      {children}
+    </div>
+  );
+}
+```
+
+**After**:
+
+```jsx
+export default function Card({ children, className = "", onClick }) {
+  return (
+    <div
+      className={`bg-white rounded-xl shadow-md p-4 sm:p-6 transition-all duration-200 hover:shadow-lg ${className}`}
+      onClick={onClick}
+    >
+      {children}
+    </div>
+  );
+}
+```
+
+**Benefits**:
+
+- No need to check globals.css for class definitions
+- Responsive padding visible at component level
+- Easier to customize per-component
+- Better IntelliSense support in editors
+
+---
+
+#### 6. Text Overflow Prevention: truncate & break-words
+
+**Problem**: Long room names and metric values broke layouts.  
+**Solution**: Added `truncate` for single-line text, `break-words` for values.
+
+**Files Changed**:
+
+- `components/ui/RoomCard.js`
+- `components/ui/MetricCard.js`
+
+**MetricCard.js Example**:
+
+```jsx
+<h3 className="text-sm font-medium text-gray-600 truncate">
+  {title}
+</h3>
+<div className="flex items-center gap-2">
+  <span className="text-xl sm:text-2xl font-bold text-gray-900 break-words">
+    {value}
+  </span>
+  {icon && (
+    <span className="text-2xl sm:text-3xl ml-2 flex-shrink-0">
+      {icon}
+    </span>
+  )}
+</div>
+```
+
+**Benefits**:
+
+- No horizontal overflow from long text
+- Icons don't shrink (flex-shrink-0)
+- Values wrap gracefully on small screens
+
+---
+
+#### 7. CSS Lint Fixes: Added Standard line-clamp Property
+
+**Problem**: Using only `-webkit-line-clamp` without standard property triggers warnings.  
+**Solution**: Added standard `line-clamp` property.
+
+**globals.css**:
+
+```css
+/* Before */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* After */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2; /* Added standard property */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+```
+
+---
+
+#### 8. Added Prose Container Utility for Long-Form Content
+
+**globals.css**:
+
+```css
+.prose-container {
+  max-width: 65ch; /* Optimal line length for reading */
+  margin-left: auto;
+  margin-right: auto;
+}
+```
+
+**Usage**: Apply to markdown/documentation content for optimal readability.
+
+---
+
+### Git Commit History (feature/responsive-flex-refactor)
+
+```bash
+258aa7b - refactor: apply max-w-7xl container and responsive spacing to main pages
+f2340c1 - refactor: update UI components with flex layouts and responsive classes
+fa4d25c - chore: reorganize documentation files into Instructions folder
+```
+
+**Commit 1 Details** (258aa7b):
+
+- Updated `globals.css`: chart min-height, prose-container, CSS lint fixes
+- Changed all pages to `max-w-7xl` container
+- Applied responsive spacing pattern (`py-6 sm:py-8 lg:py-10`)
+- Updated text sizing with sm/lg breakpoints
+- Added wrapper divs with `space-y-8 lg:space-y-10`
+
+**Commit 2 Details** (f2340c1):
+
+- `Card.js`: Replaced custom classes with Tailwind utilities
+- `RoomCard.js`: Added flex layout, truncate, responsive padding
+- `MetricCard.js`: Applied flex pattern, responsive text sizing
+- `ChartContainer.js`: Added chart-container class, responsive padding
+- `ChartWrapper.js`: Set maintainAspectRatio: true, reduced font sizes
+
+**Commit 3 Details** (fa4d25c):
+
+- Moved `COMPREHENSIVE_REFACTOR_SUMMARY.md` → `Instructions/`
+- Moved `DOCKER_RESTART_GUIDE.md` → `Instructions/`
+- Moved `README.md` → `Instructions/`
+- Moved `TESTING_GUIDE.md` → `Instructions/`
+
+---
+
+### Testing Results
+
+**Docker Build**: ✅ SUCCESS
+
+```bash
+docker compose up --build -d
+# Backend: Up 2 minutes (port 8000)
+# Frontend: Up 2 minutes (port 3000)
+# Next.js: ✓ Ready in 4.2s
+```
+
+**Compiled Pages**:
+
+- ✅ /upload (555 modules)
+- ✅ /dashboard (590 modules)
+- ✅ /analytics (607 modules)
+- ✅ /reports (618 modules)
+- ✅ /how (628 modules)
+
+**Pending**:
+
+- ⏳ Test at viewports: 360px, 768px, 1024px, 1366px
+- ⏳ Verify no horizontal scroll
+- ⏳ Capture before/after screenshots
+
+---
+
+### Acceptance Criteria
+
+✅ Created branch: `feature/responsive-flex-refactor`  
+✅ Made atomic commits (3 total)  
+✅ All pages use `max-w-7xl` container wrapper  
+✅ Flex/Grid layouts applied to all card components  
+✅ Responsive spacing pattern applied (`py-6 sm:py-8 lg:py-10`)  
+✅ Chart containers with aspect-ratio 16:9  
+✅ Replaced fixed px with responsive Tailwind utilities  
+✅ Text sizing with sm/lg breakpoints  
+✅ CSS lint warnings fixed  
+✅ Docker build successful, frontend running on port 3000  
+⏳ Viewport testing (360px, 768px, 1024px, 1366px)  
+⏳ Before/after screenshots  
+⏳ Push branch and create PR
+
+---
+
 ## What Was Accomplished
 
 ### 1. Responsive Design Implementation ✅

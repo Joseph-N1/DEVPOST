@@ -211,6 +211,7 @@ main {
 .chart-container {
   width: 100%;
   aspect-ratio: 16 / 9;
+  min-height: 220px; /* mobile fallback */
   position: relative;
 }
 
@@ -356,6 +357,7 @@ main {
 .text-truncate-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -364,7 +366,62 @@ main {
 .text-truncate-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Prose utility for text-heavy pages */
+.prose-container {
+  max-width: 65ch;
+  line-height: 1.75;
+  color: rgb(55 65 81); /* gray-700 */
+}
+
+.prose-container h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.prose-container h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.prose-container h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-container p {
+  margin-bottom: 1rem;
+}
+
+.prose-container ul, .prose-container ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.prose-container li {
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .prose-container {
+    max-width: 75ch;
+  }
+}
+
+@media (min-width: 1024px) {
+  .prose-container {
+    max-width: 85ch;
+    font-size: 1.125rem;
+  }
+}
+

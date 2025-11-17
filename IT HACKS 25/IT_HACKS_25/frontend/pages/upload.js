@@ -7,6 +7,7 @@ import GlassCard from "@/components/ui/GlassCard";
 import UploadBox from "@/components/ui/UploadBox";
 import FileList from "@/components/ui/FileList";
 import FilePreview from "@/components/ui/FilePreview";
+import PageContainer from "@/components/ui/PageContainer";
 
 export default function Upload() {
   const [file, setFile] = useState(null);
@@ -41,23 +42,21 @@ export default function Upload() {
       setMessage("⚠️ Please select a CSV file first.");
       return;
     }
-    
+
     setLoading(true);
     setMessage("");
     setError(null);
-    
+
     const form = new FormData();
     form.append("file", file);
-    
+
     try {
       const response = await axios.post(`${apiBaseUrl}/upload/csv`, form, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
       setMessage(`✅ Upload successful! File saved as: ${response.data.filename}`);
-      setFile(null); // Clear the selected file
-      await fetchFiles(); // Refresh the file list
+      setFile(null);
+      await fetchFiles();
     } catch (err) {
       const errorMsg = err.response?.data?.detail || err.message;
       setMessage(`❌ Upload failed: ${errorMsg}`);
@@ -71,7 +70,9 @@ export default function Upload() {
     setPreviewLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${apiBaseUrl}/upload/preview/${encodeURIComponent(file.path)}`);
+      const res = await axios.get(
+        `${apiBaseUrl}/upload/preview/${encodeURIComponent(file.path)}`
+      );
       setPreviewData(res.data);
     } catch (err) {
       const errorMsg = err.response?.data?.detail || err.message;
@@ -84,80 +85,89 @@ export default function Upload() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
-        {/* 🔹 Page Header */}
-        <DashboardHeader
-          title="Upload CSV"
-          subtitle="Upload or manage your farm data files for analysis"
-          actionLabel="Go to Dashboard"
-          actionHref="/dashboard"
-        />
+      <PageContainer wide>
+        <div className="py-10 space-y-10">
 
-        {/* 🔹 Upload Section */}
-        <DashboardSection title="Upload Data" subtitle="Add new CSV files for analysis">
-          <GlassCard>
-            <UploadBox onFileSelect={setFile} />
-            <div className="mt-4 flex items-center gap-3">
-              <button
-                onClick={handleUpload}
-                disabled={loading || !file}
-                className={`px-6 py-3 rounded-lg text-white font-medium transition-all ${
-                  loading || !file
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg"
-                }`}
-              >
-                {loading ? "⏳ Uploading..." : "📤 Upload File"}
-              </button>
-              {file && (
+          {/* 🔹 Page Header */}
+          <DashboardHeader
+            title="Upload CSV"
+            subtitle="Upload or manage your farm data files for analysis"
+            actionLabel="Go to Dashboard"
+            actionHref="/dashboard"
+          />
+
+          {/* 🔹 Upload Section */}
+          <DashboardSection title="Upload Data" subtitle="Add new CSV files for analysis">
+            <GlassCard>
+              <UploadBox onFileSelect={setFile} />
+
+              <div className="mt-4 flex flex-wrap items-center gap-3">
                 <button
-                  onClick={() => {
-                    setFile(null);
-                    setMessage("");
-                    setError(null);
-                  }}
-                  className="px-4 py-3 rounded-lg text-gray-700 border border-gray-300 hover:bg-gray-50 transition"
+                  onClick={handleUpload}
+                  disabled={loading || !file}
+                  className={`px-6 py-3 rounded-lg text-white font-medium transition-all ${
+                    loading || !file
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg"
+                  }`}
                 >
-                  Clear
+                  {loading ? "⏳ Uploading..." : "📤 Upload File"}
                 </button>
-              )}
-            </div>
-            {message && (
-              <div className={`mt-4 p-3 rounded-lg ${
-                message.startsWith('✅') 
-                  ? 'bg-green-50 text-green-700 border border-green-200' 
-                  : message.startsWith('⚠️')
-                  ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-                  : 'bg-red-50 text-red-700 border border-red-200'
-              }`}>
-                {message}
-              </div>
-            )}
-          </GlassCard>
-        </DashboardSection>
 
-        {/* 🔹 File List Section */}
-        <DashboardSection
-          title="Available Files"
-          subtitle="Manage your uploaded CSV files"
-        >
-          <GlassCard>
-            <FileList
-              files={files}
-              onFileSelect={handlePreview}
-              loading={loading}
-              error={error}
-            />
-            {previewData && (
-              <FilePreview
-                preview={previewData}
-                loading={previewLoading}
+                {file && (
+                  <button
+                    onClick={() => {
+                      setFile(null);
+                      setMessage("");
+                      setError(null);
+                    }}
+                    className="px-4 py-3 rounded-lg text-gray-700 border border-gray-300 hover:bg-gray-50 transition"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {message && (
+                <div
+                  className={`mt-4 p-3 rounded-lg ${
+                    message.startsWith("✅")
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : message.startsWith("⚠️")
+                      ? "bg-yellow-50 text-yellow-700 border border-yellow-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                  }`}
+                >
+                  {message}
+                </div>
+              )}
+            </GlassCard>
+          </DashboardSection>
+
+          {/* 🔹 File List Section */}
+          <DashboardSection
+            title="Available Files"
+            subtitle="Manage your uploaded CSV files"
+          >
+            <GlassCard>
+              <FileList
+                files={files}
+                onFileSelect={handlePreview}
+                loading={loading}
                 error={error}
               />
-            )}
-          </GlassCard>
-        </DashboardSection>
-      </div>
+
+              {previewData && (
+                <FilePreview
+                  preview={previewData}
+                  loading={previewLoading}
+                  error={error}
+                />
+              )}
+            </GlassCard>
+          </DashboardSection>
+        </div>
+      </PageContainer>
     </DashboardLayout>
   );
 }

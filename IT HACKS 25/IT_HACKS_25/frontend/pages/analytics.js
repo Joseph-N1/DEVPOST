@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import Layout from '@/components/layout/DashboardLayout';
+import PageContainer from '@/components/ui/PageContainer';
 import Card from '@/components/ui/Card';
 import MultiChartGrid from '@/components/ui/MultiChartGrid';
 import ComparisonSelector from '@/components/ui/ComparisonSelector';
@@ -35,7 +36,7 @@ export default function AnalyticsPage() {
         
         // Fetch full preview to get data
         const previewResponse = await axios.get(
-          `${apiBase}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=100`
+          `${apiBase}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=3000`
         );
         
         const previewData = previewResponse.data;
@@ -199,9 +200,9 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <Layout>
-        <main className="page-container py-8">
+        <PageContainer wide>
           <Loading />
-        </main>
+        </PageContainer>
       </Layout>
     );
   }
@@ -210,22 +211,22 @@ export default function AnalyticsPage() {
 
   return (
     <Layout>
-      <main className="page-container py-8">
+      <PageContainer wide>
         {/* Header */}
-        <header className="mb-6 animate-fade-in-up">
+        <header className="mb-8 animate-fade-in-up">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 flex items-center gap-2">
                 <span aria-hidden="true">📊</span>
                 {t('analytics.title', 'Analytics Dashboard')}
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm sm:text-base text-gray-600 mt-1 leading-relaxed">
                 {t('analytics.subtitle', 'Comprehensive farm performance analytics')}
               </p>
             </div>
             <button
               onClick={() => setShowComparison(!showComparison)}
-              className="btn-primary touch-target"
+              className="btn-primary touch-target whitespace-nowrap"
             >
               {showComparison 
                 ? t('analytics.hide_comparison', 'Hide Comparison')
@@ -237,7 +238,7 @@ export default function AnalyticsPage() {
         {/* Error Message */}
         {error && (
           <Card className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
-            <p className="text-yellow-700">
+            <p className="text-yellow-700 text-sm sm:text-base">
               ⚠️ {t('analytics.using_sample', 'Using sample data')}: {error}
             </p>
           </Card>
@@ -245,7 +246,7 @@ export default function AnalyticsPage() {
 
         {/* Comparison Selector */}
         {showComparison && csvData && (
-          <div className="mb-8 animate-fade-in-up">
+          <div className="mb-10 animate-fade-in-up">
             <ComparisonSelector
               rooms={rooms}
               features={features}
@@ -269,7 +270,7 @@ export default function AnalyticsPage() {
             </Card>
           )}
         </section>
-      </main>
+      </PageContainer>
     </Layout>
   );
 }

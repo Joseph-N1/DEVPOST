@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Layout from '@/components/layout/DashboardLayout';
+import PageContainer from "@/components/ui/PageContainer";
 import Card from '@/components/ui/Card';
 import Loading from '@/components/ui/Loading';
 import { useTranslation } from 'react-i18next';
@@ -24,22 +25,24 @@ export default function ReportsPage() {
           `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/upload/files`
         );
         
-        if (!filesResponse.data.files || filesResponse.data.files.length === 0) {
+        const files = filesResponse.data || [];
+        
+        if (!files || files.length === 0) {
           setLoading(false);
           return;
         }
 
-        const sortedFiles = filesResponse.data.files.sort(
+        const sortedFiles = files.sort(
           (a, b) => new Date(b.modified) - new Date(a.modified)
         );
         const latestFile = sortedFiles[0];
 
         // Fetch full data
         const dataResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/upload/preview/${encodeURIComponent(latestFile.name)}?rows=1000`
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=3000`
         );
 
-        const csvData = dataResponse.data.data || [];
+        const csvData = dataResponse.data.preview_rows || [];
         const roomIds = [...new Set(csvData.map(row => row.room_id))].sort();
 
         // Compute per-room statistics
@@ -184,9 +187,11 @@ export default function ReportsPage() {
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-screen">
-          <Loading />
-        </div>
+        <PageContainer wide>
+          <div className="flex items-center justify-center h-screen">
+            <Loading />
+          </div>
+        </PageContainer>
       </Layout>
     );
   }
@@ -194,27 +199,25 @@ export default function ReportsPage() {
   if (roomReports.length === 0) {
     return (
       <Layout>
-        <main className="max-w-7xl mx-auto px-6 py-10">
+        <PageContainer wide>
           <Card className="p-8 text-center">
-            <p className="text-gray-500">No CSV data available. Please upload a file to generate reports.</p>
+            <p className="text-gray-500 text-sm sm:text-base">No CSV data available. Please upload a file to generate reports.</p>
           </Card>
-        </main>
+        </PageContainer>
       </Layout>
     );
   }
 
   const currentRanking = rankings[selectedKPI] || [];
 
-  const currentRanking = rankings[selectedKPI] || [];
-
   return (
     <Layout>
-      <main className="max-w-7xl mx-auto px-6 py-10 space-y-8">
+      <PageContainer wide>
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">📊 Farm Performance Reports</h1>
-            <p className="text-gray-600 mt-1">Comprehensive analytics, rankings, and recommendations</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800">📊 Farm Performance Reports</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base leading-relaxed">Comprehensive analytics, rankings, and recommendations</p>
           </div>
           <button
             onClick={exportReport}
@@ -226,7 +229,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Rankings Selector */}
-        <Card className="p-6">
+        <Card className="p-6 mb-10">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <Trophy className="text-yellow-500" size={24} />
             Room Rankings
@@ -323,7 +326,7 @@ export default function ReportsPage() {
         </Card>
 
         {/* Per-Room Summary */}
-        <div>
+        <div className="mb-10">
           <h2 className="text-xl font-semibold mb-4">📋 Per-Room Summary</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {roomReports.map(report => (
@@ -401,7 +404,7 @@ export default function ReportsPage() {
             ))}
           </div>
         </Card>
-      </main>
+      </PageContainer>
     </Layout>
   );
 }

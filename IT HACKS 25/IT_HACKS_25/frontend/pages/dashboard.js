@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import PageContainer from "@/components/ui/PageContainer";
 import ChartCard from "@/components/ui/ChartCard";
 import MetricCard from "@/components/ui/MetricCard";
 import AnalyticsChart from "@/components/ui/AnalyticsChart";
@@ -22,110 +23,90 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        
-        // Try to fetch the most recent CSV file
-        const filesResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/upload/files`
-        );
-        
-        if (!filesResponse.data.files || filesResponse.data.files.length === 0) {
+
+        const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+        const filesResponse = await axios.get(`${api}/upload/files`);
+        const files = filesResponse.data || [];
+
+        if (!files.length) {
           setMessage("No CSV uploaded yet. Upload a file to see room data.");
           setLoading(false);
           return;
         }
 
-        // Get the most recent file
-        const sortedFiles = filesResponse.data.files.sort(
+        const latestFile = files.sort(
           (a, b) => new Date(b.modified) - new Date(a.modified)
-        );
-        const latestFile = sortedFiles[0];
+        )[0];
 
-        // Fetch full data from the CSV
         const dataResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/upload/preview/${encodeURIComponent(latestFile.name)}?rows=1000`
+          `${api}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=3000`
         );
 
-        const csvData = dataResponse.data.data || [];
-        
-        // Extract unique rooms and compute per-room stats
-        const roomIds = [...new Set(csvData.map(row => row.room_id))].sort();
+        const csvData = dataResponse.data.preview_rows || [];
+
+        const roomIds = [...new Set(csvData.map(r => r.room_id))].sort();
         setRooms(roomIds);
 
-        // Compute latest stats per room
         const roomStats = roomIds.map(roomId => {
-          const roomRows = csvData.filter(row => row.room_id === roomId);
-          const latestRow = roomRows.reduce((latest, current) => {
-            const latestAge = latest.age_days || 0;
-            const currentAge = current.age_days || 0;
-            return currentAge > latestAge ? current : latest;
-          }, roomRows[0]);
+          const roomRows = csvData.filter(r => r.room_id === roomId);
 
-          const avgMortality = roomRows.reduce((sum, row) => sum + (parseFloat(row.mortality_count) || 0), 0) / roomRows.length;
-          const mortalityRate = (avgMortality / (latestRow.current_birds || 1)) * 100;
+          const latest = roomRows.reduce((acc, row) =>
+            (row.age_days || 0) > (acc.age_days || 0) ? row : acc,
+          roomRows[0]);
 
-          const totalEggs = roomRows.reduce((sum, row) => sum + (parseFloat(row.eggs_produced) || 0), 0);
-          const avgWeight = roomRows.reduce((sum, row) => sum + (parseFloat(row.avg_weight_kg) || 0), 0) / roomRows.length;
-          
-          // Calculate trend (compare last 7 days vs previous 7 days)
-          const recentRows = roomRows.slice(-7);
-          const previousRows = roomRows.slice(-14, -7);
-          const recentAvgEggs = recentRows.reduce((sum, row) => sum + (parseFloat(row.eggs_produced) || 0), 0) / (recentRows.length || 1);
-          const previousAvgEggs = previousRows.reduce((sum, row) => sum + (parseFloat(row.eggs_produced) || 0), 0) / (previousRows.length || 1);
-          const trend = previousAvgEggs > 0 ? ((recentAvgEggs - previousAvgEggs) / previousAvgEggs) * 100 : 0;
+          const avgMort = roomRows.reduce((s, r) => s + (parseFloat(r.mortality_count) || 0), 0)
+            / roomRows.length;
+
+          const mortalityRate = (avgMort / (latest.current_birds || 1)) * 100;
+
+          const totalEggs = roomRows.reduce((s, r) => s + (parseFloat(r.eggs_produced) || 0), 0);
+          const avgWeight = roomRows.reduce((s, r) => s + (parseFloat(r.avg_weight_kg) || 0), 0)
+            / roomRows.length;
 
           return {
             id: roomId,
             title: `Room ${roomId}`,
-            birds: Math.round(latestRow.current_birds || 0),
+            birds: Math.round(latest.current_birds),
             avgWeight: `${avgWeight.toFixed(2)} kg`,
             mortality: `${mortalityRate.toFixed(2)}%`,
             eggsCollected: Math.round(totalEggs),
-            trend: Math.round(trend)
           };
         });
 
         setRoomsData(roomStats);
 
-        // Compute farm-wide metrics
-        const totalBirds = csvData.reduce((sum, row) => sum + (parseFloat(row.current_birds) || 0), 0) / csvData.length;
-        const avgFCR = csvData.reduce((sum, row) => sum + (parseFloat(row.feed_conversion_ratio) || 0), 0) / csvData.length;
-        const avgMortalityRate = csvData.reduce((sum, row) => sum + (parseFloat(row.mortality_count) || 0), 0) / csvData.length;
-        const avgWaterConsumption = csvData.reduce((sum, row) => sum + (parseFloat(row.feed_intake_kg) || 0), 0) / csvData.length * 2.5; // Estimate
-        
+        const totalBirds = csvData.reduce((s, r) => s + (parseFloat(r.current_birds) || 0), 0)
+          / csvData.length;
+
         setFarmMetrics({
-          avgWeightGain: (csvData.reduce((sum, row) => sum + (parseFloat(row.avg_weight_kg) || 0), 0) / csvData.length).toFixed(2),
-          fcr: avgFCR.toFixed(2),
-          mortalityRate: ((avgMortalityRate / totalBirds) * 100).toFixed(2),
-          waterConsumption: avgWaterConsumption.toFixed(1),
-          energyEfficiency: 92, // Placeholder
-          sustainabilityScore: 8.5 // Placeholder
+          avgWeightGain: (
+            csvData.reduce((s, r) => s + (parseFloat(r.avg_weight_kg) || 0), 0)
+            / csvData.length
+          ).toFixed(2),
+          fcr: (
+            csvData.reduce((s, r) => s + (parseFloat(r.feed_conversion_ratio) || 0), 0)
+            / csvData.length
+          ).toFixed(2),
+          mortalityRate: (
+            csvData.reduce((s, r) => s + (parseFloat(r.mortality_count) || 0), 0)
+            / totalBirds
+          ).toFixed(2),
+          waterConsumption: 2.5,
+          energyEfficiency: 92,
+          sustainabilityScore: 8.5
         });
 
         setLoading(false);
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
         setMessage("Error fetching rooms. Please check backend connection.");
         setLoading(false);
       }
     };
+
     fetchDashboardData();
   }, []);
-
-  const metrics = farmMetrics ? [
-    { title: "Average Weight Gain", value: `${farmMetrics.avgWeightGain} kg`, trend: 8, icon: "🐔" },
-    { title: "Feed Conversion Ratio", value: farmMetrics.fcr, trend: -3, icon: "🌾" },
-    { title: "Mortality Rate", value: `${farmMetrics.mortalityRate}%`, trend: 0, icon: "💚" },
-    { title: "Water Consumption", value: `${farmMetrics.waterConsumption}L`, trend: 5, icon: "💧" },
-    { title: "Energy Efficiency", value: `${farmMetrics.energyEfficiency}%`, trend: 2, icon: "⚡" },
-    { title: "Sustainability Score", value: farmMetrics.sustainabilityScore, trend: 3, icon: "🌿" },
-  ] : [
-    { title: "Average Weight Gain", value: "2.4 kg", trend: 8, icon: "🐔" },
-    { title: "Feed Conversion Ratio", value: "1.78", trend: -3, icon: "🌾" },
-    { title: "Mortality Rate", value: "0.5%", trend: 0, icon: "💚" },
-    { title: "Water Consumption", value: "2.5L", trend: 5, icon: "💧" },
-    { title: "Energy Efficiency", value: "92%", trend: 2, icon: "⚡" },
-    { title: "Sustainability Score", value: "8.5", trend: 3, icon: "🌿" },
-  ];
 
   const chartData = {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
@@ -144,92 +125,58 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto px-6 py-10 space-y-10">
-        
-        {/* ✅ Dashboard Header */}
-        <DashboardHeader
-          title="Farm Dashboard"
-          subtitle="Monitor live farm performance and key metrics"
-          actionLabel="Upload CSV"
-          actionHref="/upload"
-        />
+      <PageContainer wide>
+        <div className="space-y-10">
 
-        {/* ✅ Error Message */}
-        {message && (
-          <div className="text-yellow-700 bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-            ⚠️ {message}
-          </div>
-        )}
+          <DashboardHeader
+            title="Farm Dashboard"
+            subtitle="Monitor live farm performance and key metrics"
+            actionLabel="Upload CSV"
+            actionHref="/upload"
+          />
 
-        {/* ✅ Dynamic Room Summary Section */}
-        {roomsData.length > 0 && (
-          <>
-            <SectionTitle
-              title="Room Performance Summary"
-              subtitle={`Overview of all ${roomsData.length} active rooms`}
-            />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {roomsData.map((room) => (
-                <RoomCard key={room.id} {...room} />
-              ))}
+          {message && (
+            <div className="text-yellow-700 bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+              ⚠️ {message}
             </div>
-          </>
-        )}
+          )}
 
-        {/* ✅ Metrics Section */}
-        <SectionTitle
-          title="Farm Metrics"
-          subtitle="Daily health and performance insights"
-        />
+          {/* ROOM SUMMARY */}
+          {roomsData.length > 0 && (
+            <>
+              <SectionTitle
+                title="Room Performance Summary"
+                subtitle={`Overview of all ${roomsData.length} active rooms`}
+              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {roomsData.map(room => <RoomCard key={room.id} {...room} />)}
+              </div>
+            </>
+          )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {metrics.map((m) => (
-            <MetricCard key={m.title} {...m} />
-          ))}
+          {/* METRIC CARDS */}
+          <SectionTitle title="Farm Metrics" subtitle="Daily health and performance insights" />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { title: "Average Weight Gain", value: `${farmMetrics.avgWeightGain} kg`, icon: "🐔" },
+              { title: "Feed Conversion Ratio", value: farmMetrics.fcr, icon: "🌾" },
+              { title: "Mortality Rate", value: `${farmMetrics.mortalityRate}%`, icon: "💚" },
+              { title: "Water Consumption", value: `2.5L`, icon: "💧" },
+              { title: "Energy Efficiency", value: `92%`, icon: "⚡" },
+              { title: "Sustainability Score", value: `8.5`, icon: "🌿" },
+            ].map(m => <MetricCard key={m.title} {...m} />)}
+          </div>
+
+          {/* WEEKLY TREND CHART */}
+          <SectionTitle title="Performance Trends" subtitle="Weekly weight gain and efficiency overview" />
+
+          <ChartContainer title="Weekly Performance Trends">
+            <AnalyticsChart labels={chartData.labels} data={chartData.data} datasetLabel="Weight (kg)" />
+          </ChartContainer>
+
         </div>
-
-        {/* ✅ Feed Efficiency Overview */}
-        <SectionTitle
-          title="Feed Efficiency Overview"
-          subtitle="Monitor conversion ratios and cost performance"
-        />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <FeedEfficiencyCard
-            feedType="Starter Feed"
-            fcr={farmMetrics ? parseFloat(farmMetrics.fcr) + 0.13 : 1.78}
-            costPerBird="$2.15"
-            trend={+5}
-          />
-          <FeedEfficiencyCard
-            feedType="Grower Feed"
-            fcr={farmMetrics ? parseFloat(farmMetrics.fcr) : 1.65}
-            costPerBird="$1.95"
-            trend={+3}
-          />
-          <FeedEfficiencyCard
-            feedType="Layer Feed"
-            fcr={farmMetrics ? parseFloat(farmMetrics.fcr) - 0.1 : 1.55}
-            costPerBird="$1.80"
-            trend={+7}
-          />
-        </div>
-
-        {/* ✅ Weekly Performance Chart */}
-        <SectionTitle
-          title="Performance Trends"
-          subtitle="Weekly weight gain and efficiency overview"
-        />
-
-        <ChartContainer title="Weekly Performance Trends">
-          <AnalyticsChart
-            labels={chartData.labels}
-            data={chartData.data}
-            datasetLabel="Weight (kg)"
-          />
-        </ChartContainer>
-      </div>
+      </PageContainer>
     </DashboardLayout>
   );
 }

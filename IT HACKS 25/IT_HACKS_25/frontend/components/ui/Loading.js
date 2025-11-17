@@ -34,4 +34,6 @@ const LoadingCard = ({ message = 'Loading data...', className = '' }) => {
   );
 };
 
+// Default export for common usage
+export default LoadingSpinner;
 export { LoadingSpinner, LoadingOverlay, LoadingCard };
