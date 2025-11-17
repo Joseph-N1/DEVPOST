@@ -84,9 +84,47 @@ export default function HowPage() {
         </header>
 
         <section className="dashboard-grid">
-          <div className="responsive-card card-min-h">
-            <h2 className="text-base md:text-lg font-semibold">{t('how.quickstart', 'Quick Start')}</h2>
-            <p className="text-sm md:text-base">{t('how.quickstart_desc', 'Upload data, view analytics, generate reports.')}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="responsive-card card-min-h">
+              <h2 className="text-base md:text-lg font-semibold">{t('how.quickstart', 'Quick Start')}</h2>
+              <p className="text-sm md:text-base">{t('how.quickstart_desc', 'Upload data, view analytics, generate reports.')}</p>
+            </div>
+
+            <div className="responsive-card card-min-h">
+              <h2 className="text-base md:text-lg font-semibold">{t('how.steps_title', 'How it works')}</h2>
+              <ol className="mt-3 space-y-2 list-decimal list-inside text-sm text-gray-700">
+                {steps.map((s, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-8 h-8 flex items-center justify-center bg-green-50 rounded-md">{s.icon}</div>
+                    <div>
+                      <div className="font-semibold">{s.title}</div>
+                      <div className="text-sm text-gray-600">{s.desc}</div>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          {/* Feature list rendered below */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
+            {features.map((f, idx) => (
+              <GlassCard key={idx} className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="text-2xl">{f.icon}</div>
+                  <div>
+                    <h3 className="font-semibold">{f.title}</h3>
+                    <p className="text-sm text-gray-600">{f.description}</p>
+                  </div>
+                </div>
+
+                <ul className="mt-3 list-disc list-inside text-sm text-gray-700">
+                  {f.steps.map((step, sIdx) => (
+                    <li key={sIdx}>{step}</li>
+                  ))}
+                </ul>
+              </GlassCard>
+            ))}
           </div>
         </section>
       </main>

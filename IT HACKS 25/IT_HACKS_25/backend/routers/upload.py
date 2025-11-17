@@ -66,6 +66,19 @@ async def list_csv_files():
             for f in SAMPLE_DATA_DIR.glob('*.csv')
         ])
 
+    # List files in uploads directory
+    if UPLOAD_DIR.exists():
+        csv_files.extend([
+            {
+                'filename': f.name,
+                'path': str(f.relative_to(DATA_DIR)),
+                'size': f.stat().st_size,
+                'modified': f.stat().st_mtime,
+                'type': 'user-upload'
+            }
+            for f in UPLOAD_DIR.glob('*.csv')
+        ])
+
     return sorted(csv_files, key=lambda x: x['modified'], reverse=True)
 
 @router.get('/preview/{file_path:path}')

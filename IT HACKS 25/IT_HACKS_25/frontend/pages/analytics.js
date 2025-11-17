@@ -14,10 +14,13 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // TODO: Replace with actual API endpoint
-        const response = await fetch('/api/analytics/summary');
-        const data = await response.json();
-        setData(data);
+        // Try backend analysis endpoint (development env uses NEXT_PUBLIC_API_URL)
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiBase.replace(/\/+$/, '')}/analysis/rooms`);
+        if (!response.ok) throw new Error(`API ${response.status} ${response.statusText}`);
+        const payload = await response.json();
+        // backend returns { rooms: [...] }
+        setData({ rooms: payload.rooms || [] });
         setError(null);
       } catch (err) {
         setError(err.message);
@@ -101,31 +104,34 @@ export default function AnalyticsPage() {
     );
   }
 
-  // Use sample data if API data is not available
-  const displayData = data || sampleData;
+  // Merge backend data with sampleData so missing sections (productionMetrics, trends, etc.) are filled
+  const displayData = {
+    ...sampleData,
+    ...(data || {})
+  };
   const summaryMetrics = [
     { 
       label: "Total Birds", 
       value: displayData.productionMetrics.totalBirds.toLocaleString(), 
-      icon: <Egg className="w-6 h-6 text-green-700" />, 
+      icon: '🐣',
       trend: "+2%" 
     },
     { 
       label: "Average Weight", 
       value: `${displayData.productionMetrics.avgWeight} kg`, 
-      icon: <TrendingUp className="w-6 h-6 text-blue-600" />, 
+      icon: '⚖️',
       trend: "+0.2kg" 
     },
     { 
       label: "Feed Conversion", 
       value: displayData.productionMetrics.feedConversion.toFixed(2), 
-      icon: <AlertTriangle className="w-6 h-6 text-yellow-600" />, 
+      icon: '🌾',
       trend: "-0.1" 
     },
     { 
       label: "Water Usage", 
       value: `${displayData.environmentMetrics.waterConsumption}L`, 
-      icon: <Droplets className="w-6 h-6 text-blue-600" />, 
+      icon: '💧',
       trend: "+5%" 
     },
   ];
@@ -180,7 +186,7 @@ export default function AnalyticsPage() {
           </Card>
 
           <div className="responsive-card chart-card">
-            <AnalyticsChart title="Weight over time" labels={[]} data={[]} datasetLabel="Avg weight" />
+            <AnalyticsChart title="Weight over time" labels={chartData.weight.labels} data={chartData.weight.data} datasetLabel={chartData.weight.label} />
           </div>
 
           {/* more cards/charts */}

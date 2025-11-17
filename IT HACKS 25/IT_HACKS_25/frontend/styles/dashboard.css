@@ -163,7 +163,13 @@
 
 /* card gutters and consistent min-height */
 .card-min-h {
-  min-height: 10rem;
+  min-height: 14rem;
+  padding: 1rem;
+}
+
+/* utility for wider cards that should span columns on larger screens */
+.wide-card {
+  grid-column: 1 / -1;
 }
 
 /* align card contents */
