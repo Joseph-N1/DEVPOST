@@ -84,28 +84,47 @@ async def list_csv_files():
 @router.get('/preview/{file_path:path}')
 async def preview_csv(
     file_path: str,
-    rows: int = Query(default=5, ge=1, le=3000)
+    rows: int = Query(default=5, ge=1, le=3000),
+    start_date: str = Query(default=None),
+    end_date: str = Query(default=None)
 ):
-    """Preview the contents of a CSV file."""
+    """Preview the contents of a CSV file with optional date filtering."""
     try:
         full_path = DATA_DIR / file_path
         if not full_path.is_file() or not str(full_path).endswith('.csv'):
             raise HTTPException(status_code=404, detail='File not found')
 
-        # Read CSV with pandas (first N rows)
-        df = pd.read_csv(full_path, nrows=rows)
+        # Read CSV with pandas
+        df = pd.read_csv(full_path)
 
-        # Efficient total row count (avoid loading full file)
-        with open(full_path, 'rb') as f:
-            total_rows = sum(1 for _ in f) - 1  # subtract header
+        # Apply date filtering if provided
+        if start_date or end_date:
+            # Check if 'date' column exists
+            if 'date' in df.columns:
+                df['date'] = pd.to_datetime(df['date'], errors='coerce')
+                
+                if start_date:
+                    start_dt = pd.to_datetime(start_date)
+                    df = df[df['date'] >= start_dt]
+                
+                if end_date:
+                    end_dt = pd.to_datetime(end_date)
+                    df = df[df['date'] <= end_dt]
+        
+        total_rows = len(df)
+        
+        # Limit rows after filtering
+        df_preview = df.head(rows)
 
         return {
             'filename': os.path.basename(file_path),
-            'total_rows': max(total_rows, 0),
-            'total_columns': len(df.columns),
-            'columns': df.columns.tolist(),
-            'preview_rows': df.to_dict('records'),
-            'dtypes': df.dtypes.astype(str).to_dict()
+            'total_rows': total_rows,
+            'total_columns': len(df_preview.columns),
+            'columns': df_preview.columns.tolist(),
+            'preview_rows': df_preview.to_dict('records'),
+            'dtypes': df_preview.dtypes.astype(str).to_dict(),
+            'filtered': bool(start_date or end_date),
+            'date_range': {'start': start_date, 'end': end_date} if (start_date or end_date) else None
         }
     except HTTPException:
         raise

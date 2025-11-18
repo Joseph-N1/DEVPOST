@@ -55,10 +55,7 @@ export default function DashboardPage() {
             (row.age_days || 0) > (acc.age_days || 0) ? row : acc,
           roomRows[0]);
 
-          const avgMort = roomRows.reduce((s, r) => s + (parseFloat(r.mortality_count) || 0), 0)
-            / roomRows.length;
-
-          const mortalityRate = (avgMort / (latest.current_birds || 1)) * 100;
+          const mortalityRate = parseFloat(latest.mortality_rate) || 0;
 
           const totalEggs = roomRows.reduce((s, r) => s + (parseFloat(r.eggs_produced) || 0), 0);
           const avgWeight = roomRows.reduce((s, r) => s + (parseFloat(r.avg_weight_kg) || 0), 0)
@@ -67,7 +64,7 @@ export default function DashboardPage() {
           return {
             id: roomId,
             title: `Room ${roomId}`,
-            birds: Math.round(latest.current_birds),
+            birds: Math.round(latest.birds_end),
             avgWeight: `${avgWeight.toFixed(2)} kg`,
             mortality: `${mortalityRate.toFixed(2)}%`,
             eggsCollected: Math.round(totalEggs),
@@ -76,8 +73,15 @@ export default function DashboardPage() {
 
         setRoomsData(roomStats);
 
-        const totalBirds = csvData.reduce((s, r) => s + (parseFloat(r.current_birds) || 0), 0)
-          / csvData.length;
+        const latestRows = roomIds.map(roomId => {
+          const roomRows = csvData.filter(r => r.room_id === roomId);
+          return roomRows.reduce((acc, row) =>
+            (row.age_days || 0) > (acc.age_days || 0) ? row : acc,
+          roomRows[0]);
+        });
+
+        const totalBirds = latestRows.reduce((s, r) => s + (parseFloat(r.birds_end) || 0), 0);
+        const totalMortality = latestRows.reduce((s, r) => s + (parseFloat(r.cumulative_mortality) || 0), 0);
 
         setFarmMetrics({
           avgWeightGain: (
@@ -85,12 +89,11 @@ export default function DashboardPage() {
             / csvData.length
           ).toFixed(2),
           fcr: (
-            csvData.reduce((s, r) => s + (parseFloat(r.feed_conversion_ratio) || 0), 0)
+            csvData.reduce((s, r) => s + (parseFloat(r.fcr) || 0), 0)
             / csvData.length
           ).toFixed(2),
           mortalityRate: (
-            csvData.reduce((s, r) => s + (parseFloat(r.mortality_count) || 0), 0)
-            / totalBirds
+            (totalMortality / (totalBirds + totalMortality)) * 100
           ).toFixed(2),
           waterConsumption: 2.5,
           energyEfficiency: 92,

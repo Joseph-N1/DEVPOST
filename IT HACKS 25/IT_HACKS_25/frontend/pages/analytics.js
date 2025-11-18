@@ -148,7 +148,7 @@ export default function AnalyticsPage() {
         emoji: '🌾',
         type: 'line',
         data: createChartData(
-          aggregateByAge('feed_intake_kg'),
+          aggregateByAge('feed_kg_total'),
           t('analytics.feed_kg', 'Feed (kg/bird)'),
           'rgb(249, 115, 22)'
         )
@@ -178,7 +178,7 @@ export default function AnalyticsPage() {
         emoji: '📊',
         type: 'line',
         data: createChartData(
-          aggregateByAge('feed_conversion_ratio'),
+          aggregateByAge('fcr'),
           t('analytics.fcr_value', 'FCR'),
           'rgb(168, 85, 247)'
         )
@@ -191,7 +191,7 @@ export default function AnalyticsPage() {
   const features = [
     { key: 'eggs_produced', label: t('analytics.eggs', 'Eggs Produced'), emoji: '🥚' },
     { key: 'avg_weight_kg', label: t('analytics.weight', 'Avg Weight'), emoji: '⚖️' },
-    { key: 'feed_intake_kg', label: t('analytics.feed', 'Feed Intake'), emoji: '🌾' },
+    { key: 'feed_kg_total', label: t('analytics.feed', 'Feed Intake'), emoji: '🌾' },
     { key: 'mortality_rate', label: t('analytics.mortality', 'Mortality'), emoji: '💔' },
     { key: 'temperature_c', label: t('analytics.temperature', 'Temperature'), emoji: '🌡️' },
     { key: 'humidity_pct', label: t('analytics.humidity', 'Humidity'), emoji: '💧' }

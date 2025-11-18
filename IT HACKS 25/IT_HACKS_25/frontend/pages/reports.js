@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import dynamic from 'next/dynamic';
 import Layout from '@/components/layout/DashboardLayout';
 import PageContainer from "@/components/ui/PageContainer";
 import Card from '@/components/ui/Card';
 import Loading from '@/components/ui/Loading';
+import DateRangePicker from '@/components/ui/DateRangePicker';
 import { useTranslation } from 'react-i18next';
-import { Download, Trophy, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
+import { Download, Trophy, TrendingUp, TrendingDown, AlertTriangle, FileJson, FileSpreadsheet, ChevronDown, FileText } from 'lucide-react';
 
 export default function ReportsPage() {
   const { t } = useTranslation();
@@ -13,7 +17,9 @@ export default function ReportsPage() {
   const [roomReports, setRoomReports] = useState([]);
   const [rankings, setRankings] = useState({});
   const [recommendations, setRecommendations] = useState([]);
+  const [aiPredictions, setAiPredictions] = useState({});
   const [selectedKPI, setSelectedKPI] = useState('eggs');
+  const [dateRange, setDateRange] = useState(null);
 
   useEffect(() => {
     const fetchReportData = async () => {
@@ -37,10 +43,14 @@ export default function ReportsPage() {
         );
         const latestFile = sortedFiles[0];
 
+        // Build URL with date range if set
+        let url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=3000`;
+        if (dateRange) {
+          url += `&start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`;
+        }
+
         // Fetch full data
-        const dataResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=3000`
-        );
+        const dataResponse = await axios.get(url);
 
         const csvData = dataResponse.data.preview_rows || [];
         const roomIds = [...new Set(csvData.map(row => row.room_id))].sort();
@@ -51,15 +61,15 @@ export default function ReportsPage() {
           
           const totalEggs = roomRows.reduce((sum, row) => sum + (parseFloat(row.eggs_produced) || 0), 0);
           const avgWeight = roomRows.reduce((sum, row) => sum + (parseFloat(row.avg_weight_kg) || 0), 0) / roomRows.length;
-          const avgFCR = roomRows.reduce((sum, row) => sum + (parseFloat(row.feed_conversion_ratio) || 0), 0) / roomRows.length;
-          const totalMortality = roomRows.reduce((sum, row) => sum + (parseFloat(row.mortality_count) || 0), 0);
+          const avgFCR = roomRows.reduce((sum, row) => sum + (parseFloat(row.fcr) || 0), 0) / roomRows.length;
           const avgTemp = roomRows.reduce((sum, row) => sum + (parseFloat(row.temperature_c) || 0), 0) / roomRows.length;
           const avgHumidity = roomRows.reduce((sum, row) => sum + (parseFloat(row.humidity_pct) || 0), 0) / roomRows.length;
-          const totalFeed = roomRows.reduce((sum, row) => sum + (parseFloat(row.feed_intake_kg) || 0), 0);
+          const totalFeed = roomRows.reduce((sum, row) => sum + (parseFloat(row.feed_kg_total) || 0), 0);
           
           const latestRow = roomRows[roomRows.length - 1];
-          const currentBirds = latestRow.current_birds || 0;
-          const mortalityRate = (totalMortality / (currentBirds + totalMortality)) * 100;
+          const currentBirds = latestRow.birds_end || 0;
+          const totalMortality = latestRow.cumulative_mortality || 0;
+          const mortalityRate = parseFloat(latestRow.mortality_rate) || 0;
 
           // Peak production day
           const peakEggs = Math.max(...roomRows.map(row => parseFloat(row.eggs_produced) || 0));
@@ -96,6 +106,28 @@ export default function ReportsPage() {
           fcr: rankByFCR,
           mortality: rankByMortality
         });
+
+        // Fetch AI predictions for each room
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        try {
+          const aiResults = await Promise.allSettled(
+            roomIds.map(roomId =>
+              axios.get(`${apiBase}/api/analysis/rooms/${roomId}/predict`)
+                .then(res => ({ roomId, data: res.data }))
+                .catch(err => ({ roomId, error: err.message }))
+            )
+          );
+
+          const predictions = {};
+          aiResults.forEach(result => {
+            if (result.status === 'fulfilled' && result.value.data) {
+              predictions[result.value.roomId] = result.value.data;
+            }
+          });
+          setAiPredictions(predictions);
+        } catch (aiError) {
+          console.warn('AI predictions unavailable:', aiError);
+        }
 
         // Generate recommendations
         const recs = [];
@@ -159,9 +191,9 @@ export default function ReportsPage() {
       }
     };
     fetchReportData();
-  }, []);
+  }, [dateRange]);
 
-  const exportReport = () => {
+  const exportCSV = () => {
     // Generate CSV export
     let csvContent = "Room ID,Total Eggs,Avg Weight (kg),Avg FCR,Total Mortality,Mortality Rate (%),Avg Temp (°C),Avg Humidity (%),Peak Eggs,Peak Day\n";
     
@@ -183,6 +215,232 @@ export default function ReportsPage() {
     link.click();
     URL.revokeObjectURL(url);
   };
+
+  const exportJSON = () => {
+    // Generate JSON export with full metadata
+    const data = {
+      farmId: 'FARM_001',
+      exportDate: new Date().toISOString(),
+      generatedBy: 'IT Hacks 25 Dashboard',
+      summary: {
+        totalRooms: roomReports.length,
+        totalRecommendations: recommendations.length
+      },
+      rooms: roomReports.map(report => ({
+        roomId: report.roomId,
+        metrics: {
+          totalEggs: report.totalEggs,
+          averageWeight: parseFloat(report.avgWeight),
+          feedConversionRatio: parseFloat(report.avgFCR),
+          totalMortality: report.totalMortality,
+          mortalityRate: parseFloat(report.mortalityRate),
+          averageTemperature: parseFloat(report.avgTemp),
+          averageHumidity: parseFloat(report.avgHumidity),
+          peakEggProduction: report.peakEggs,
+          peakProductionDay: report.peakDay,
+          currentBirdCount: report.currentBirds,
+          daysTracked: report.daysTracked
+        }
+      })),
+      recommendations: recommendations.map(rec => ({
+        roomId: rec.roomId,
+        type: rec.type,
+        category: rec.category,
+        message: rec.message
+      }))
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `farm_report_${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setShowExportMenu(false);
+  };
+
+  const exportPDF = async () => {
+    // Dynamic imports for client-side only
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+    
+    // Manually attach autoTable if it's not already on the prototype
+    if (typeof jsPDF.API.autoTable === 'undefined') {
+      jsPDF.API.autoTable = autoTable;
+    }
+    
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const today = new Date().toLocaleDateString();
+
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(34, 139, 34);
+    doc.text('IT Hacks 25 - Farm Performance Report', pageWidth / 2, 20, { align: 'center' });
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated: ${today}`, pageWidth / 2, 28, { align: 'center' });
+    doc.text(`Farm ID: FARM_001`, pageWidth / 2, 33, { align: 'center' });
+
+    // Summary Section
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text('Summary', 14, 45);
+    
+    doc.setFontSize(10);
+    const summaryData = [
+      ['Total Rooms Tracked', roomReports.length.toString()],
+      ['Total Recommendations', recommendations.length.toString()],
+      ['Report Period', `${roomReports[0]?.daysTracked || 0} days`]
+    ];
+    
+    // Use autoTable as a function, passing doc as first argument
+    autoTable(doc, {
+      startY: 50,
+      head: [],
+      body: summaryData,
+      theme: 'plain',
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 70 },
+        1: { cellWidth: 'auto' }
+      }
+    });
+
+    // Room Performance Table
+    let currentY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.text('Room Performance Metrics', 14, currentY);
+    
+    const roomTableData = roomReports.map(report => [
+      report.roomId,
+      report.totalEggs.toLocaleString(),
+      `${report.avgWeight} kg`,
+      report.avgFCR,
+      `${report.mortalityRate}%`,
+      `${report.avgTemp}°C`,
+      `${report.avgHumidity}%`,
+      report.currentBirds.toLocaleString()
+    ]);
+
+    autoTable(doc, {
+      startY: currentY + 5,
+      head: [['Room', 'Total Eggs', 'Avg Weight', 'FCR', 'Mortality', 'Temp', 'Humidity', 'Birds']],
+      body: roomTableData,
+      theme: 'striped',
+      headStyles: { fillColor: [34, 139, 34], textColor: 255 },
+      styles: { fontSize: 8, cellPadding: 2 },
+      columnStyles: {
+        0: { fontStyle: 'bold' }
+      }
+    });
+
+    // Recommendations Section
+    if (recommendations.length > 0) {
+      currentY = doc.lastAutoTable.finalY + 10;
+      
+      // Check if we need a new page
+      if (currentY > 250) {
+        doc.addPage();
+        currentY = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.text('Recommendations & Insights', 14, currentY);
+      
+      const recTableData = recommendations.map(rec => [
+        rec.roomId,
+        rec.category,
+        rec.type,
+        rec.message
+      ]);
+
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [['Room', 'Category', 'Type', 'Message']],
+        body: recTableData,
+        theme: 'grid',
+        headStyles: { fillColor: [59, 130, 246], textColor: 255 },
+        styles: { fontSize: 8, cellPadding: 3 },
+        columnStyles: {
+          0: { cellWidth: 20 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 'auto' }
+        },
+        didParseCell: function(data) {
+          if (data.row.section === 'body' && data.column.index === 2) {
+            const cellValue = data.cell.text[0];
+            if (cellValue === 'warning') {
+              data.cell.styles.textColor = [234, 88, 12];
+            } else if (cellValue === 'success') {
+              data.cell.styles.textColor = [34, 139, 34];
+            }
+          }
+        }
+      });
+    }
+
+    // AI Predictions Section
+    const roomsWithAI = Object.keys(aiPredictions).filter(roomId => !aiPredictions[roomId].error);
+    if (roomsWithAI.length > 0) {
+      currentY = doc.lastAutoTable.finalY + 10;
+      
+      if (currentY > 250) {
+        doc.addPage();
+        currentY = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.text('AI-Powered Predictions', 14, currentY);
+      
+      const aiTableData = roomsWithAI.map(roomId => {
+        const prediction = aiPredictions[roomId];
+        const topFeed = prediction.recommendations?.[0];
+        return [
+          roomId,
+          `${prediction.predicted_avg_weight_kg} kg`,
+          topFeed ? topFeed.feed : 'N/A',
+          topFeed ? `${topFeed.expected_avg_weight} kg` : 'N/A'
+        ];
+      });
+
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [['Room', 'Predicted Weight', 'Best Feed', 'Expected Weight']],
+        body: aiTableData,
+        theme: 'striped',
+        headStyles: { fillColor: [99, 102, 241], textColor: 255 },
+        styles: { fontSize: 9, cellPadding: 3 }
+      });
+    }
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+      doc.text(
+        'Generated by IT Hacks 25 Dashboard',
+        pageWidth - 14,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'right' }
+      );
+    }
+
+    doc.save(`farm_report_${new Date().toISOString().split('T')[0]}.pdf`);
+    setShowExportMenu(false);
+  };
+
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   if (loading) {
     return (
@@ -217,15 +475,56 @@ export default function ReportsPage() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800">📊 Farm Performance Reports</h1>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base leading-relaxed">Comprehensive analytics, rankings, and recommendations</p>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base leading-relaxed">
+              Comprehensive analytics, rankings, and recommendations
+              {dateRange && (
+                <span className="ml-2 text-green-600 font-medium">
+                  ({dateRange.startDate} to {dateRange.endDate})
+                </span>
+              )}
+            </p>
           </div>
-          <button
-            onClick={exportReport}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-          >
-            <Download size={18} />
-            Export Report
-          </button>
+          <div className="flex gap-2">
+            <DateRangePicker
+              onApply={setDateRange}
+              onClear={() => setDateRange(null)}
+            />
+            <div className="relative">
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+              >
+                <Download size={18} />
+                Export Report
+                <ChevronDown size={16} className={`transition-transform ${showExportMenu ? 'rotate-180' : ''}`} />
+              </button>
+            {showExportMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+                <button
+                  onClick={exportCSV}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left rounded-t-lg"
+                >
+                  <FileSpreadsheet size={18} className="text-green-600" />
+                  <span className="font-medium text-gray-700">Export as CSV</span>
+                </button>
+                <button
+                  onClick={exportJSON}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left border-t border-gray-100"
+                >
+                  <FileJson size={18} className="text-blue-600" />
+                  <span className="font-medium text-gray-700">Export as JSON</span>
+                </button>
+                <button
+                  onClick={exportPDF}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left rounded-b-lg border-t border-gray-100"
+                >
+                  <FileText size={18} className="text-red-600" />
+                  <span className="font-medium text-gray-700">Export as PDF</span>
+                </button>
+              </div>
+            )}
+            </div>
+          </div>
         </div>
 
         {/* Rankings Selector */}
@@ -366,6 +665,35 @@ export default function ReportsPage() {
                     <p className="font-semibold text-lg">{report.avgHumidity}%</p>
                   </div>
                 </div>
+
+                {/* AI Predictions Section */}
+                {aiPredictions[report.roomId] && !aiPredictions[report.roomId].error && (
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <h4 className="text-sm font-semibold text-blue-700 mb-3 flex items-center gap-2">
+                      🤖 AI-Powered Insights
+                    </h4>
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-700 mb-3">
+                        <span className="font-medium">Predicted Average Weight:</span> {aiPredictions[report.roomId].predicted_avg_weight_kg} kg
+                      </p>
+                      {aiPredictions[report.roomId].recommendations && aiPredictions[report.roomId].recommendations.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium text-gray-700 mb-2">Feed Recommendations:</p>
+                          <div className="space-y-2">
+                            {aiPredictions[report.roomId].recommendations.slice(0, 3).map((feedRec, idx) => (
+                              <div key={idx} className="flex items-center justify-between bg-white p-2 rounded text-xs">
+                                <span className="font-medium text-gray-800">{feedRec.feed}</span>
+                                <span className="text-green-600">
+                                  Expected: {feedRec.expected_avg_weight} kg
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </Card>
             ))}
           </div>
