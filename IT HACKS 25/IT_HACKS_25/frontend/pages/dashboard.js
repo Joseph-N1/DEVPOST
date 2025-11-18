@@ -11,11 +11,14 @@ import RoomCard from "@/components/ui/RoomCard";
 import FeedEfficiencyCard from "@/components/ui/FeedEfficiencyCard";
 import DashboardHeader from "@/components/ui/DashboardHeader";
 import Loading from "@/components/ui/Loading";
+import { getAllRoomsPredictions, getFeedRecommendations } from "@/utils/api";
 
 export default function DashboardPage() {
   const [rooms, setRooms] = useState([]);
   const [roomsData, setRoomsData] = useState([]);
   const [farmMetrics, setFarmMetrics] = useState(null);
+  const [predictions, setPredictions] = useState([]);
+  const [feedRecommendations, setFeedRecommendations] = useState([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -101,6 +104,22 @@ export default function DashboardPage() {
         });
 
         setLoading(false);
+
+        // Fetch AI predictions for all rooms
+        if (roomIds.length > 0) {
+          try {
+            const aiPredictions = await getAllRoomsPredictions();
+            setPredictions(aiPredictions);
+            
+            // Get feed recommendations for the first room as example
+            if (roomIds[0]) {
+              const feedRecs = await getFeedRecommendations(roomIds[0]);
+              setFeedRecommendations(feedRecs);
+            }
+          } catch (error) {
+            console.error('Failed to load AI predictions:', error);
+          }
+        }
       } catch (err) {
         console.error(err);
         setMessage("Error fetching rooms. Please check backend connection.");
@@ -177,6 +196,92 @@ export default function DashboardPage() {
           <ChartContainer title="Weekly Performance Trends">
             <AnalyticsChart labels={chartData.labels} data={chartData.data} datasetLabel="Weight (kg)" />
           </ChartContainer>
+
+          {/* AI PREDICTIONS SECTION */}
+          {predictions.length > 0 && (
+            <>
+              <SectionTitle 
+                title="🤖 AI Predictions" 
+                subtitle="Machine learning insights for optimal performance"
+              />
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {predictions.slice(0, 6).map(pred => (
+                  <div key={pred.room_id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Room {pred.room_id}
+                      </h3>
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                        AI Forecast
+                      </span>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Predicted Weight:</span>
+                        <span className="text-xl font-bold text-blue-600">
+                          {pred.predicted_avg_weight_kg} kg
+                        </span>
+                      </div>
+                      {pred.recommendations && pred.recommendations.length > 0 && (
+                        <div className="pt-3 border-t border-gray-100">
+                          <p className="text-xs text-gray-500 mb-2">Top Recommendation:</p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-700">
+                              {pred.recommendations[0].feed}
+                            </span>
+                            <span className="text-sm text-green-600">
+                              {pred.recommendations[0].expected_avg_weight} kg
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* FEED RECOMMENDATIONS */}
+          {feedRecommendations.length > 0 && (
+            <>
+              <SectionTitle 
+                title="🌾 Top Feed Recommendations" 
+                subtitle="Optimized feed selection based on AI analysis"
+              />
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {feedRecommendations.map((rec, idx) => (
+                  <div key={rec.feed} className="relative bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-md border-2 border-gray-200 p-6 hover:shadow-lg hover:border-green-300 transition-all">
+                    <div className="absolute top-4 right-4 text-4xl">{rec.emoji}</div>
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2 py-1 bg-green-600 text-white text-xs font-bold rounded">
+                          #{rec.rank}
+                        </span>
+                        <span className="text-sm font-semibold text-gray-500">RECOMMENDED</span>
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-1">{rec.feed}</h3>
+                      <p className="text-sm text-gray-600">{rec.benefit}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600">Performance Score:</span>
+                        <span className="font-bold text-green-600">{(rec.score * 100).toFixed(0)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all"
+                          style={{ width: `${rec.score * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
         </div>
       </PageContainer>

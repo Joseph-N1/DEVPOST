@@ -29,16 +29,19 @@ export default function AnalyticsChart({
   title = "Performance Trends",
   labels = [],
   data = [],
+  datasets = null, // Support multiple datasets for confidence intervals
   datasetLabel = "Metric",
+  borderColor = '#059669',
+  backgroundColor = 'rgba(5,150,105,0.08)',
 }) {
   const chartData = {
     labels,
-    datasets: [{
+    datasets: datasets || [{
       label: datasetLabel,
       data: data,
       fill: true,
-      backgroundColor: 'rgba(5,150,105,0.08)',
-      borderColor: '#059669',
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
       tension: 0.4,
       pointRadius: 2
     }]
@@ -48,12 +51,17 @@ export default function AnalyticsChart({
     responsive: true,
     maintainAspectRatio: false, // parent aspect-ratio handles sizing
     scales: { x: { grid: { display: false } }, y: { beginAtZero: true } },
-    plugins: { legend: { display: false } }
+    plugins: { 
+      legend: { 
+        display: datasets ? true : false,
+        position: 'top'
+      } 
+    }
   };
 
   return (
     <div className="chart-card responsive-card">
-      <h3 className="text-base md:text-lg font-semibold mb-3">{title}</h3>
+      {title && <h3 className="text-base md:text-lg font-semibold mb-3">{title}</h3>}
       <div className="chart-container chart-wrapper">
         <Line data={chartData} options={options} />
       </div>

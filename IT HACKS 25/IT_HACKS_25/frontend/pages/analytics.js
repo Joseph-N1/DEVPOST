@@ -7,6 +7,9 @@ import Card from '@/components/ui/Card';
 import MultiChartGrid from '@/components/ui/MultiChartGrid';
 import ComparisonSelector from '@/components/ui/ComparisonSelector';
 import Loading from '@/components/ui/Loading';
+import AnalyticsChart from '@/components/ui/AnalyticsChart';
+import ChartContainer from '@/components/ui/ChartContainer';
+import { getWeightForecast, getWeeklyForecast, getModelMetrics, getAccuracyHistory } from '@/utils/api';
 
 export default function AnalyticsPage() {
   const { t } = useTranslation();
@@ -15,6 +18,11 @@ export default function AnalyticsPage() {
   const [rooms, setRooms] = useState([]);
   const [error, setError] = useState(null);
   const [showComparison, setShowComparison] = useState(false);
+  const [forecasts, setForecasts] = useState({});
+  const [weeklyForecasts, setWeeklyForecasts] = useState({});
+  const [modelMetrics, setModelMetrics] = useState(null);
+  const [accuracyHistory, setAccuracyHistory] = useState(null);
+  const [showWeekly, setShowWeekly] = useState(false);
 
   const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -45,6 +53,41 @@ export default function AnalyticsPage() {
         // Extract unique rooms
         const uniqueRooms = [...new Set(previewData.preview_rows.map(row => row.room_id))];
         setRooms(uniqueRooms);
+        
+        // Fetch forecasts for all rooms
+        const forecastData = {};
+        const weeklyForecastData = {};
+        for (const roomId of uniqueRooms.slice(0, 3)) { // Limit to first 3 rooms
+          const forecast = await getWeightForecast(roomId, 7);
+          if (forecast) {
+            forecastData[roomId] = forecast;
+          }
+          const weeklyForecast = await getWeeklyForecast(roomId, 4);
+          if (weeklyForecast) {
+            weeklyForecastData[roomId] = weeklyForecast;
+          }
+        }
+        setForecasts(forecastData);
+        setWeeklyForecasts(weeklyForecastData);
+        
+        // Fetch model metrics and accuracy history with error handling
+        try {
+          const metrics = await getModelMetrics();
+          if (metrics && !metrics.error) {
+            setModelMetrics(metrics);
+          }
+        } catch (metricsErr) {
+          console.warn('Model metrics not available:', metricsErr);
+        }
+        
+        try {
+          const history = await getAccuracyHistory();
+          if (history && !history.error) {
+            setAccuracyHistory(history);
+          }
+        } catch (historyErr) {
+          console.warn('Accuracy history not available:', historyErr);
+        }
       } else {
         // Fallback to sample data
         loadSampleData();
@@ -270,6 +313,194 @@ export default function AnalyticsPage() {
             </Card>
           )}
         </section>
+
+        {/* AI Weight Forecast Section */}
+        {Object.keys(forecasts).length > 0 && (
+          <section className="mt-10 animate-fade-in-up animate-delay-300">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <span aria-hidden="true">🔮</span>
+                {showWeekly ? 'Weekly Weight Forecast (4 Weeks)' : '7-Day Weight Forecast (AI Predictions)'}
+              </h2>
+              <button
+                onClick={() => setShowWeekly(!showWeekly)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm"
+              >
+                {showWeekly ? 'Show Daily' : 'Show Weekly'}
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {Object.entries(showWeekly ? weeklyForecasts : forecasts).map(([roomId, forecast]) => {
+                const hasConfidence = forecast.upper_bound && forecast.lower_bound;
+                return (
+                  <ChartContainer 
+                    key={roomId} 
+                    title={`Room ${roomId} - Predicted Growth`}
+                    subtitle={
+                      <div className="space-y-1">
+                        <div>Base weight: {forecast.base_weight} kg</div>
+                        <div>Growth rate: {forecast.growth_rate_percent ? forecast.growth_rate_percent.toFixed(1) : forecast.weekly_growth_rate_percent.toFixed(1)}% per {showWeekly ? 'week' : 'day'}</div>
+                        {hasConfidence && (
+                          <div className="text-sm text-gray-500">Confidence: ±{forecast.confidence_interval_percent}%</div>
+                        )}
+                      </div>
+                    }
+                  >
+                    {hasConfidence ? (
+                      <div className="relative">
+                        <AnalyticsChart
+                          labels={forecast.labels}
+                          datasets={[
+                            {
+                              label: 'Predicted Weight (kg)',
+                              data: forecast.predicted_weights,
+                              borderColor: 'rgb(99, 102, 241)',
+                              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                              fill: true
+                            },
+                            {
+                              label: 'Upper Bound (+10%)',
+                              data: forecast.upper_bound,
+                              borderColor: 'rgba(99, 102, 241, 0.3)',
+                              backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                              borderDash: [5, 5],
+                              fill: false
+                            },
+                            {
+                              label: 'Lower Bound (-10%)',
+                              data: forecast.lower_bound,
+                              borderColor: 'rgba(99, 102, 241, 0.3)',
+                              backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                              borderDash: [5, 5],
+                              fill: false
+                            }
+                          ]}
+                        />
+                      </div>
+                    ) : (
+                      <AnalyticsChart
+                        labels={forecast.labels}
+                        data={forecast.predicted_weights}
+                        datasetLabel="Predicted Weight (kg)"
+                        borderColor="rgb(99, 102, 241)"
+                        backgroundColor="rgba(99, 102, 241, 0.1)"
+                      />
+                    )}
+                  </ChartContainer>
+                );
+              })}
+            </div>
+          </section>
+        )}
+        
+        {/* Model Performance Metrics Section */}
+        {modelMetrics && (
+          <section className="mt-10 animate-fade-in-up animate-delay-400">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <span aria-hidden="true">📊</span>
+              Model Performance Metrics
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card className="p-6 bg-gradient-to-br from-blue-50 to-white">
+                <h3 className="text-sm font-semibold text-gray-600 mb-2">Test MAE</h3>
+                <p className="text-3xl font-bold text-blue-600">{modelMetrics.test_mae?.toFixed(3)}</p>
+                <p className="text-xs text-gray-500 mt-2">Mean Absolute Error</p>
+              </Card>
+              
+              <Card className="p-6 bg-gradient-to-br from-green-50 to-white">
+                <h3 className="text-sm font-semibold text-gray-600 mb-2">Test R² Score</h3>
+                <p className="text-3xl font-bold text-green-600">{(modelMetrics.test_r2 * 100)?.toFixed(1)}%</p>
+                <p className="text-xs text-gray-500 mt-2">Model Accuracy</p>
+              </Card>
+              
+              <Card className="p-6 bg-gradient-to-br from-purple-50 to-white">
+                <h3 className="text-sm font-semibold text-gray-600 mb-2">Test RMSE</h3>
+                <p className="text-3xl font-bold text-purple-600">{modelMetrics.test_rmse?.toFixed(3)}</p>
+                <p className="text-xs text-gray-500 mt-2">Root Mean Squared Error</p>
+              </Card>
+              
+              <Card className="p-6 bg-gradient-to-br from-orange-50 to-white">
+                <h3 className="text-sm font-semibold text-gray-600 mb-2">Training Samples</h3>
+                <p className="text-3xl font-bold text-orange-600">{modelMetrics.n_samples}</p>
+                <p className="text-xs text-gray-500 mt-2">Data points used</p>
+              </Card>
+              
+              <Card className="p-6 bg-gradient-to-br from-pink-50 to-white">
+                <h3 className="text-sm font-semibold text-gray-600 mb-2">Features</h3>
+                <p className="text-3xl font-bold text-pink-600">{modelMetrics.n_features}</p>
+                <p className="text-xs text-gray-500 mt-2">Input variables</p>
+              </Card>
+              
+              <Card className="p-6 bg-gradient-to-br from-indigo-50 to-white">
+                <h3 className="text-sm font-semibold text-gray-600 mb-2">Last Trained</h3>
+                <p className="text-lg font-bold text-indigo-600">
+                  {modelMetrics.trained_at ? new Date(modelMetrics.trained_at).toLocaleDateString() : 'N/A'}
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  {modelMetrics.trained_at ? new Date(modelMetrics.trained_at).toLocaleTimeString() : ''}
+                </p>
+              </Card>
+            </div>
+          </section>
+        )}
+        
+        {/* Historical Accuracy Section */}
+        {accuracyHistory && accuracyHistory.history && (
+          <section className="mt-10 animate-fade-in-up animate-delay-500">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <span aria-hidden="true">📈</span>
+              Historical Model Accuracy
+            </h2>
+            <Card className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Total Trainings</p>
+                  <p className="text-2xl font-bold text-indigo-600">{accuracyHistory.total_trainings}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Average Test MAE</p>
+                  <p className="text-2xl font-bold text-blue-600">{accuracyHistory.avg_test_mae?.toFixed(3)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">Average Test R²</p>
+                  <p className="text-2xl font-bold text-green-600">{(accuracyHistory.avg_test_r2 * 100)?.toFixed(1)}%</p>
+                </div>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test MAE</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test R²</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Train MAE</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {accuracyHistory.history.slice(-10).reverse().map((entry, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(entry.timestamp).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-semibold">
+                          {entry.test_mae?.toFixed(3)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">
+                          {(entry.test_r2 * 100)?.toFixed(1)}%
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {entry.train_mae?.toFixed(3)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </section>
+        )}
       </PageContainer>
     </Layout>
   );

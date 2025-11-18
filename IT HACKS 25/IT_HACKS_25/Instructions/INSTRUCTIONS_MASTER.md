@@ -274,6 +274,148 @@ fcr
 
 ---
 
+### **November 18, 2025 - Phase 2: AI Enhancement & Predictions** ⭐
+
+#### Phase 2 Objective:
+
+Connect AI predictions to frontend, implement auto-training on CSV upload, add feed recommendations with emojis, and create 7-day weight forecast charts.
+
+#### Step 1: Frontend API Wrapper ✅
+
+**Created** `frontend/utils/api.js` (150 lines):
+
+- Complete abstraction layer for backend communication
+- 10+ exported functions: `getRooms()`, `getRoomKPIs()`, `getRoomPredictions()`, `getAllRoomsPredictions()`, `uploadCSV()`, `getFeedRecommendations()`, `getWeightForecast()`, `fetchAPI()`
+- Feed emoji mapping: 🐣 Starter Plus, 🌾 Grower Max, 🥚 Layer Supreme, 🍖 Feed D
+- Error handling with try/catch blocks
+- Score normalization for feed recommendations
+
+#### Step 2: Auto-Training on CSV Upload ✅
+
+**Modified** `backend/routers/upload.py`:
+
+- Added import: `from services.ai_analyzer import train_example`
+- Enhanced `upload_csv()` function to call `train_example()` after file save
+- Returns: `{"filename": ..., "training_triggered": true, "training_result": {...}}`
+- Non-fatal error handling: Upload succeeds even if training fails
+
+#### Step 3: Enhanced Feed Recommendations ✅
+
+**Modified** `backend/services/ai_analyzer.py`:
+
+- Enhanced `predict_for_room()` with detailed feed database:
+  - 4 feeds: Starter Plus 🐣 (22% protein, 2900 kcal), Grower Max 🌾 (18% protein, 3000 kcal), Layer Supreme 🥚 (17% protein, 2800 kcal), Finisher Pro 🍖 (19% protein, 3100 kcal)
+  - Boost factors: 1.1, 1.2, 1.05, 1.15
+  - Categories: starter, grower, layer, finisher
+- Scoring algorithm:
+  - Base score from predicted weight
+  - Temperature penalty if > 28°C
+  - Mortality penalty if > 10%
+  - Boost factor multiplier
+  - Confidence scores: 75-99% based on boost factors
+- Returns: `{"predicted_avg_weight": ..., "recommendations": [{feed, expected_avg_weight, confidence_score, emoji, category}]}`
+
+**Modified** `frontend/pages/dashboard.js`:
+
+- Added imports: `getAllRoomsPredictions`, `getFeedRecommendations` from api.js
+- New state: `predictions[]`, `feedRecommendations[]`
+- Fetches predictions after room data loads
+- **AI Predictions Section**:
+  - Grid of 6 prediction cards max (3 columns on desktop)
+  - Shows: room ID, predicted weight, top recommendation, expected weight
+  - Styling: Blue badges, white cards with shadows, hover scale effects
+- **Feed Recommendations Section**:
+  - 3 cards with gradient backgrounds
+  - Shows: rank badge (🥇🥈🥉), emoji (4xl size), feed name, benefit text
+  - Progress bar: Green gradient showing performance score percentage (0-100)
+  - Styling: Border hover transition to green-500
+
+#### Step 4: Weight Forecast Charts ✅
+
+**Modified** `backend/services/ai_analyzer.py`:
+
+- NEW function: `generate_weight_forecast(room_id, days=7)`
+- Logic: Compound growth at 2.5% daily rate from current average weight
+- Returns: `{"labels": ["Day 1", ...], "predicted_weights": [2.1, 2.15, ...], "base_weight": 2.1, "growth_rate_percent": 2.5}`
+- Configurable: 1-30 days forecast
+
+**Modified** `backend/routers/analysis.py`:
+
+- Added import: `from fastapi import Query` and `generate_weight_forecast` from ai_analyzer
+- NEW endpoint: `@router.get('/rooms/{room_id}/forecast')`
+- Parameters: `room_id: str`, `days: int = Query(default=7, ge=1, le=30)`
+- Calls: `generate_weight_forecast(room_id, days)`
+
+**Modified** `frontend/pages/analytics.js`:
+
+- Added imports: `AnalyticsChart`, `ChartContainer`, `getWeightForecast` from api.js
+- New state: `forecasts{}` (keyed by room_id)
+- Fetches forecasts for first 3 rooms after CSV load (7 days each)
+- **Forecast Section**:
+  - Title: "🔮 7-Day Weight Forecast (AI Predictions)"
+  - Grid: 1 column mobile, 2 columns desktop
+  - Each chart: Room ID, base weight, growth rate %, predicted weights line chart
+  - Chart config: Indigo color (rgb(99, 102, 241)), 10% opacity fill, responsive aspect ratio
+
+#### Step 5: Docker Rebuild ✅
+
+**Commands**:
+
+```powershell
+docker compose down
+docker compose build
+docker compose up -d
+```
+
+**Build Results**:
+
+- Build time: 11.1 seconds (26/26 steps)
+- Frontend: node:18-alpine, cached dependencies, new code copied (0.2s), export (0.9s)
+- Backend: python:3.11-slim, cached dependencies, new code copied (0.2s), export (1.3s)
+- Images: `it_hacks_25-frontend:latest`, `it_hacks_25-backend:latest`
+- Status: ✅ Both containers built successfully
+
+#### Step 6: Documentation Update ✅
+
+**Updated Files**:
+
+- INSTRUCTIONS_MASTER.md: Added Phase 2 section with all implementation details
+- Known Issues: Removed "Manual trigger required" limitation (auto-training now enabled)
+
+#### Phase 2 Summary:
+
+**Files Created**:
+
+- `frontend/utils/api.js` (150 lines)
+
+**Files Modified**:
+
+- `backend/routers/upload.py` (added auto-training trigger)
+- `backend/services/ai_analyzer.py` (enhanced recommendations, added forecast generation)
+- `backend/routers/analysis.py` (added /forecast endpoint)
+- `frontend/pages/dashboard.js` (added AI predictions and feed recommendations sections)
+- `frontend/pages/analytics.js` (added forecast charts section)
+
+**New Backend Endpoints**:
+
+- `GET /analysis/rooms/{room_id}/forecast?days={1-30}` - Weight forecast generation
+
+**New Frontend Features**:
+
+- 🤖 AI Predictions grid (6 cards with predicted weights)
+- 🌾 Top Feed Recommendations (3 cards with emojis, scores, progress bars)
+- 🔮 7-Day Weight Forecast charts (line charts with growth rate display)
+
+**Technical Improvements**:
+
+- Complete API abstraction layer (10+ functions)
+- Auto-training on upload (non-fatal if fails)
+- Enhanced feed database (4 feeds with specs, emojis, confidence scores)
+- Configurable forecast generation (1-30 days)
+- Professional UI with badges, emojis, progress bars, hover effects
+
+---
+
 ### **November 18, 2025 - Phase 1: Quick Wins & Export Features**
 
 #### Quick Win #1: JSON Export ✅
@@ -641,11 +783,10 @@ docker compose up -d
 
 ### Current Limitations:
 
-1. **AI Model Training**: Manual trigger required (not auto-trained on upload)
-2. **Data Persistence**: No database (CSV files only)
-3. **User Management**: No authentication/authorization
-4. **Real-time Updates**: No live data streaming
-5. **Mobile Charts**: Limited interactivity on small screens
+1. **Data Persistence**: No database (CSV files only)
+2. **User Management**: No authentication/authorization
+3. **Real-time Updates**: No live data streaming
+4. **Mobile Charts**: Limited interactivity on small screens
 
 ### Fixed Issues (Historical):
 

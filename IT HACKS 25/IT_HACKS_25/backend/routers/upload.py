@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 import pandas as pd
 import os
+from services.ai_analyzer import train_example
 
 router = APIRouter(tags=["upload"])
 
@@ -33,7 +34,22 @@ async def upload_csv(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save file: {e}")
 
-    return {"filename": filename, "saved_to": str(dest)}
+    # 🚀 AUTO-TRAIN MODEL AFTER UPLOAD
+    training_result = None
+    try:
+        training_result = train_example()
+        if training_result:
+            print(f"✅ Model auto-trained after upload: {training_result}")
+    except Exception as train_error:
+        print(f"⚠️ Auto-training failed (non-fatal): {train_error}")
+        # Don't fail the upload if training fails
+
+    return {
+        "filename": filename, 
+        "saved_to": str(dest),
+        "training_triggered": training_result is not None,
+        "training_result": training_result
+    }
 
 @router.get('/files')
 async def list_csv_files():

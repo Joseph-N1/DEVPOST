@@ -40,13 +40,23 @@ export default function RoomDetail() {
           {pred ? (
             <div>
               <p>Predicted Avg Weight: {pred.predicted_avg_weight_kg}</p>
-              <p>Top Recommendations:</p>
-              <ul className="list-disc ml-6">
-                {pred.recommendations.map((r, idx)=>(<li key={idx}>
-  {`${r.feed} -> expected avg weight ${r.expected_avg_weight}`}
-</li>
-))}
-              </ul>
+              {pred.error ? (
+                <p className="text-red-500">{pred.error}</p>
+              ) : (
+                <>
+                  <p>Top Recommendations:</p>
+                  <ul className="list-disc ml-6">
+                    {pred.recommendations && pred.recommendations.length > 0 ? (
+                      pred.recommendations.map((r, idx)=>(<li key={idx}>
+                        {`${r.feed} -> expected avg weight ${r.expected_avg_weight}`}
+                      </li>
+                      ))
+                    ) : (
+                      <li>No recommendations available</li>
+                    )}
+                  </ul>
+                </>
+              )}
             </div>
           ) : <p>Loading prediction...</p>}
         </div>
