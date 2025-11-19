@@ -8,6 +8,7 @@ from services.ai_analyzer import (
     get_model_metrics,
     get_accuracy_history
 )
+from services.weekly_aggregator import aggregate_weekly_data, get_week_comparison
 
 router = APIRouter()
 
@@ -50,6 +51,16 @@ def model_metrics():
 def accuracy_history():
     """Get historical accuracy tracking data"""
     return get_accuracy_history()
+
+@router.get('/weekly')
+def weekly_aggregation():
+    """Get weekly aggregated metrics for all rooms"""
+    return aggregate_weekly_data()
+
+@router.get('/weekly/comparison')
+def weekly_comparison(room_id: str = Query(default=None)):
+    """Get week-over-week comparison for specific room or all rooms"""
+    return get_week_comparison(room_id)
 
 @router.get('/sample')
 def sample_data():

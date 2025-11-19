@@ -188,3 +188,99 @@ export async function getAccuracyHistory() {
   }
 }
 
+/**
+ * Get weekly aggregated data for all rooms
+ */
+export async function getWeeklyData() {
+  try {
+    return await fetchAPI('/analysis/weekly');
+  } catch (error) {
+    console.error('Failed to fetch weekly data:', error);
+    return { error: 'Weekly data not available' };
+  }
+}
+
+/**
+ * Get week-over-week comparison
+ */
+export async function getWeekComparison(roomId = null) {
+  try {
+    const endpoint = roomId ? `/analysis/weekly/comparison?room_id=${roomId}` : '/analysis/weekly/comparison';
+    return await fetchAPI(endpoint);
+  } catch (error) {
+    console.error('Failed to fetch week comparison:', error);
+    return { error: 'Week comparison not available' };
+  }
+}
+
+/**
+ * ========================================
+ * AI INTELLIGENCE API FUNCTIONS
+ * ========================================
+ */
+
+/**
+ * Get comprehensive AI analysis
+ * Returns: feed_optimization, mortality_risks, environmental_warnings, room_recommendations, health_summary
+ */
+export async function getAIAnalysis(filePath = null) {
+  try {
+    const endpoint = filePath ? `/ai/analyze?file_path=${encodeURIComponent(filePath)}` : '/ai/analyze';
+    return await fetchAPI(endpoint);
+  } catch (error) {
+    console.error('Failed to fetch AI analysis:', error);
+    return { error: 'AI analysis not available' };
+  }
+}
+
+/**
+ * Get anomaly detection results
+ * Returns: anomalies array with severity, explanations, and actions
+ */
+export async function getAnomalies(filePath = null, sensitivity = 0.1) {
+  try {
+    const endpoint = filePath 
+      ? `/ai/anomalies?file_path=${encodeURIComponent(filePath)}&sensitivity=${sensitivity}`
+      : `/ai/anomalies?sensitivity=${sensitivity}`;
+    return await fetchAPI(endpoint);
+  } catch (error) {
+    console.error('Failed to fetch anomalies:', error);
+    return { error: 'Anomaly detection not available', anomalies: [], total_detected: 0 };
+  }
+}
+
+/**
+ * Get weekly AI-powered farm manager report
+ * Returns: complete report with all sections
+ */
+export async function getWeeklyAIReport(filePath = null) {
+  try {
+    const endpoint = filePath ? `/ai/report/weekly?file_path=${encodeURIComponent(filePath)}` : '/ai/report/weekly';
+    return await fetchAPI(endpoint);
+  } catch (error) {
+    console.error('Failed to fetch weekly AI report:', error);
+    return { error: 'Weekly AI report not available' };
+  }
+}
+
+/**
+ * Get AI explanation for a specific metric (used in tooltips)
+ * Returns: meaning, explanation, recommended_action
+ */
+export async function getMetricExplanation(metric, value, change = 0, roomId = null) {
+  try {
+    let endpoint = `/ai/explain-metric?metric=${encodeURIComponent(metric)}&value=${value}&change=${change}`;
+    if (roomId) {
+      endpoint += `&room_id=${roomId}`;
+    }
+    return await fetchAPI(endpoint);
+  } catch (error) {
+    console.error('Failed to fetch metric explanation:', error);
+    return {
+      metric: metric.replace('_', ' ').toUpperCase(),
+      meaning: 'AI explanation temporarily unavailable',
+      explanation: `Current value: ${value}`,
+      recommended_action: 'Monitor trends and consult documentation'
+    };
+  }
+}

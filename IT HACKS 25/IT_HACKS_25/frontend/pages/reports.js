@@ -8,6 +8,7 @@ import PageContainer from "@/components/ui/PageContainer";
 import Card from '@/components/ui/Card';
 import Loading from '@/components/ui/Loading';
 import DateRangePicker from '@/components/ui/DateRangePicker';
+import RefreshButton from '@/components/ui/RefreshButton';
 import { useTranslation } from 'react-i18next';
 import { Download, Trophy, TrendingUp, TrendingDown, AlertTriangle, FileJson, FileSpreadsheet, ChevronDown, FileText } from 'lucide-react';
 
@@ -485,6 +486,10 @@ export default function ReportsPage() {
             </p>
           </div>
           <div className="flex gap-2">
+            <RefreshButton onRefresh={() => {
+              setDateRange(null);
+              window.location.reload();
+            }} />
             <DateRangePicker
               onApply={setDateRange}
               onClear={() => setDateRange(null)}

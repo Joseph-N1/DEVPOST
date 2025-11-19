@@ -9,6 +9,7 @@ import ComparisonSelector from '@/components/ui/ComparisonSelector';
 import Loading from '@/components/ui/Loading';
 import AnalyticsChart from '@/components/ui/AnalyticsChart';
 import ChartContainer from '@/components/ui/ChartContainer';
+import RefreshButton from '@/components/ui/RefreshButton';
 import { getWeightForecast, getWeeklyForecast, getModelMetrics, getAccuracyHistory } from '@/utils/api';
 
 export default function AnalyticsPage() {
@@ -267,14 +268,17 @@ export default function AnalyticsPage() {
                 {t('analytics.subtitle', 'Comprehensive farm performance analytics')}
               </p>
             </div>
-            <button
-              onClick={() => setShowComparison(!showComparison)}
-              className="btn-primary touch-target whitespace-nowrap"
-            >
-              {showComparison 
-                ? t('analytics.hide_comparison', 'Hide Comparison')
-                : t('analytics.show_comparison', 'Show Comparison')}
-            </button>
+            <div className="flex items-center gap-3">
+              <RefreshButton onRefresh={fetchAnalyticsData} />
+              <button
+                onClick={() => setShowComparison(!showComparison)}
+                className="btn-primary touch-target whitespace-nowrap"
+              >
+                {showComparison 
+                  ? t('analytics.hide_comparison', 'Hide Comparison')
+                  : t('analytics.show_comparison', 'Show Comparison')}
+              </button>
+            </div>
           </div>
         </header>
 

@@ -1,8 +1,8 @@
 # IT HACKS 25 - Master Instructions & Project Timeline
 
-**Last Updated**: November 18, 2025  
+**Last Updated**: November 19, 2025  
 **Project**: Poultry Performance Tracker Dashboard  
-**Tech Stack**: Next.js 15.5.4 + FastAPI + Docker
+**Tech Stack**: Next.js 15.5.4 + FastAPI + Docker + AI Intelligence Layer
 
 ---
 
@@ -655,6 +655,413 @@ docker compose up -d
 
 ---
 
+### **November 19, 2025 - Phase 4: AI Intelligence Layer** ⭐⭐⭐
+
+#### Phase 4 Objective:
+
+Implement comprehensive AI Intelligence Layer including: AI Recommendation Engine (feed optimization, mortality risk, environmental warnings), Anomaly Detection System (Z-score + Isolation Forest), Weekly AI Farm Manager Report, AI-Powered Tooltips, and full integration into Dashboard/Analytics/Reports pages.
+
+#### Step 1: AI Recommendation Engine Backend ✅
+
+**Created** `backend/services/ai_intelligence.py` (300+ lines):
+
+- **Main Function**: `analyze_csv_data(csv_path)` - Orchestrator function analyzing uploaded CSV data
+- **Features**:
+  - Feed efficiency analysis with severity levels (critical/warning/info)
+  - Mortality risk prediction with multi-tier alerts (critical/high/medium)
+  - Environmental condition monitoring (temperature/humidity)
+  - Room performance scoring (0-100 with action items)
+  - Farm-wide health summary generation
+- **Key Functions**:
+  - `analyze_feed_efficiency(room_data)` - FCR optimization analysis
+  - `analyze_mortality_risk(room_data)` - Health risk prediction
+  - `analyze_environment(room_data)` - Temperature/humidity warnings
+  - `generate_room_recommendation(room_data)` - 0-100 scoring with actionable steps
+  - `generate_health_summary(all_data)` - Farm KPIs aggregation
+- **Dependencies**: pandas, numpy, pathlib, datetime
+
+#### Step 2: Anomaly Detection System ✅
+
+**Created** `backend/ml/anomaly_detector.py` (400+ lines):
+
+- **Dual Detection Methods**:
+  1. **Z-Score Analysis** - Statistical outlier detection (threshold: 2.5-4.0)
+  2. **Isolation Forest** - Multivariate pattern detection (contamination: 0.05-0.2)
+- **Main Functions**:
+  - `detect_anomalies(df, sensitivity=0.1)` - Entry point orchestrator
+  - `detect_zscore_anomalies(df, threshold)` - Statistical method
+  - `detect_isolation_forest_anomalies(df, contamination)` - ML method
+  - `generate_corrective_actions(anomaly, room_data)` - Metric-specific recommendations (3 actions per anomaly)
+  - `remove_duplicate_anomalies(anomalies)` - Deduplication logic
+  - `severity_rank(severity)` - Priority sorting (critical > high > medium)
+- **Monitored Metrics**: eggs_produced, mortality_rate, avg_weight_kg, feed_kg_total, water_liters_total, temperature_c, humidity_pct
+- **Output Format**: Severity (critical/high/medium), room_id, metric, value, mean, std_dev, explanation, 3 corrective actions
+
+#### Step 3: Weekly Farm Manager Report ✅
+
+**Created** `backend/services/farm_report_generator.py` (350+ lines):
+
+- **8-Section Comprehensive Report**:
+  1. **Farm Overview** - KPIs + trends (birds, mortality rate, eggs, FCR)
+  2. **Room Rankings** - 4 categories with medals 🥇🥈🥉 (egg production, weight gain, feed efficiency, lowest mortality)
+  3. **KPI Trends** - 4-week analysis with percentage changes
+  4. **Anomalies Summary** - Critical/high/medium counts by room
+  5. **Top 10 Recommendations** - Actionable insights from AI analysis
+  6. **Weekly Forecast** - 7-day predictions for all rooms
+  7. **Action Items** - Prioritized tasks (URGENT/HIGH/MEDIUM)
+  8. **Executive Summary** - AI-generated overview with highlights
+- **Main Function**: `generate_weekly_report(csv_path)` - Orchestrator returning complete report dict
+- **Dependencies**: Imports from ai_intelligence, anomaly_detector, ai_analyzer
+
+#### Step 4: AI API Endpoints ✅
+
+**Created** `backend/routers/ai_intelligence.py` (200+ lines):
+
+- **5 REST Endpoints**:
+  1. `GET /ai/analyze?file_path={path}` - Comprehensive analysis (feed, mortality, environment, recommendations)
+  2. `GET /ai/anomalies?file_path={path}&sensitivity={0.1}` - Anomaly detection with configurable sensitivity
+  3. `GET /ai/report/weekly?file_path={path}` - Weekly farm manager report (8 sections)
+  4. `GET /ai/explain-metric?metric={name}&value={val}&change={pct}&room_id={id}` - Tooltip explanations
+  5. `GET /ai/health` - Health check endpoint (all services operational)
+- **Features**: Query parameters, HTTPException error handling, Optional types, async operations
+- **Error Handling**: Graceful 500/400 responses with error messages
+
+**Modified** `backend/main.py`:
+
+- Added import: `from routers import upload, analysis, ai_intelligence`
+- Registered router: `app.include_router(ai_intelligence.router)` with logger.info
+
+**Modified** `backend/requirements.txt`:
+
+- Added: `scipy==1.11.2` (required for Z-score calculations in stats module)
+
+#### Step 5: AI-Powered Tooltips Frontend ✅
+
+**Created** `frontend/components/ui/AITooltip.js` (100+ lines):
+
+- **Reusable Tooltip Component** with hover-triggered explanations
+- **Props**: metric, value, change, roomId
+- **Features**:
+  - HelpCircle icon trigger
+  - showTooltip state management
+  - fetchExplanation() on hover (lazy loading)
+  - Loading spinner during API call
+  - Rich formatting: meaning, explanation, action sections
+  - AI badge footer
+  - Styling: white bg, blue border-2, shadow-2xl, rounded-lg
+- **Dependencies**: lucide-react (Info, HelpCircle), @/utils/api (getMetricExplanation)
+
+**Modified** `frontend/components/ui/MetricCard.js`:
+
+- Added AITooltip import and integration
+- New props: metricKey, roomId
+- Tooltip icon appears next to title when metricKey provided
+- Preserved existing TrendingUp/Down/Minus icons and badges
+
+#### Step 6: Dashboard AI Integration ✅
+
+**Modified** `frontend/pages/dashboard.js` (MAJOR UPDATE - 309 lines total):
+
+- **New State Variables**: aiAnalysis, anomalies
+- **API Calls**: getAIAnalysis(filePath), getAnomalies(filePath, 0.1)
+- **150+ Line AI Intelligence Insights Section**:
+
+  **🚨 Detected Anomalies**:
+
+  - Color-coded alerts (red-100/800 for critical, orange-100/800 for high, yellow-100/800 for medium)
+  - Displays: room_id, explanation, 3 corrective actions
+  - Grid: 1→2→3 columns responsive
+
+  **🌾 Feed Optimization**:
+
+  - Green cards (green-100/800) with room recommendations
+  - Shows: severity badges, score, action items
+  - Grid: 1→2→3 columns responsive
+
+  **💊 Health & Mortality Risks**:
+
+  - Red cards (red-100/800) with risk levels
+  - Shows: room_id, risk classification, suggestions
+  - Grid: 1→2→3 columns responsive
+
+  **🌡️ Environmental Conditions**:
+
+  - Blue cards (blue-100/800) with temperature/humidity warnings
+  - Shows: room_id, condition type, recommendations
+  - Grid: 1→2→3 columns responsive
+
+  **Farm Health Status**:
+
+  - Purple card (purple-100/800) with farm-wide KPIs
+  - Shows: total_birds, mortality_rate, total_eggs, average_fcr
+  - Single card full width
+
+- **MetricCard AI Integration**: Added metricKey prop to 4 metrics (avg_weight_kg, fcr, mortality_rate, water_liters_total)
+
+#### Step 7: Frontend API Utilities ✅
+
+**Modified** `frontend/utils/api.js` (300+ lines total):
+
+- **4 New AI Functions**:
+  1. `getAIAnalysis(filePath)` - Calls /ai/analyze, returns feed/mortality/environment recommendations
+  2. `getAnomalies(filePath, sensitivity)` - Calls /ai/anomalies with configurable sensitivity
+  3. `getWeeklyAIReport(filePath)` - Calls /ai/report/weekly, returns 8-section report
+  4. `getMetricExplanation(metric, value, change, roomId)` - Calls /ai/explain-metric for tooltips
+- **Error Handling**: All return {error: ...} on failure with fallback data
+- **Integration**: Used by Dashboard (getAIAnalysis, getAnomalies) and AITooltip (getMetricExplanation)
+
+#### Step 8: Docker Rebuild and Testing ✅
+
+**Docker Commands Executed**:
+
+```powershell
+docker compose down
+docker compose build
+docker compose up -d
+```
+
+**Build Results**:
+
+- Build time: 1692.5 seconds (scipy installation takes majority of time)
+- Frontend: node:18-alpine, new code copied, exported successfully
+- Backend: python:3.11-slim, scipy and dependencies installed, exported successfully
+- Images: `it_hacks_25-frontend:latest`, `it_hacks_25-backend:latest`
+- Status: ✅ Both containers built and started successfully
+
+**Endpoint Validation**:
+
+```powershell
+curl http://localhost:8000/ai/health
+```
+
+- `/ai/health` response: 200 OK
+- Services status: All operational (ai_intelligence, anomaly_detection, report_generator, metric_explainer)
+- Containers: frontend (port 3000), backend (port 8000) ✅ Running
+
+#### Phase 4 Summary:
+
+**Files Created**:
+
+- `backend/services/ai_intelligence.py` (300+ lines)
+- `backend/ml/anomaly_detector.py` (400+ lines)
+- `backend/services/farm_report_generator.py` (350+ lines)
+- `backend/routers/ai_intelligence.py` (200+ lines)
+- `frontend/components/ui/AITooltip.js` (100+ lines)
+
+**Files Modified**:
+
+- `backend/main.py` (added ai_intelligence router registration)
+- `backend/requirements.txt` (added scipy==1.11.2)
+- `frontend/components/ui/MetricCard.js` (added AITooltip integration, metricKey/roomId props)
+- `frontend/pages/dashboard.js` (added 150+ line AI Intelligence Insights section)
+- `frontend/utils/api.js` (added 4 AI functions)
+
+**New Backend Endpoints**:
+
+- `GET /ai/analyze?file_path={path}` - Comprehensive AI analysis
+- `GET /ai/anomalies?file_path={path}&sensitivity={0.1}` - Anomaly detection
+- `GET /ai/report/weekly?file_path={path}` - Weekly farm manager report
+- `GET /ai/explain-metric?metric={name}&value={val}&change={pct}&room_id={id}` - Metric explanations
+- `GET /ai/health` - Health check endpoint
+
+**New Frontend Features**:
+
+- 🤖 AI Intelligence Insights Section (Dashboard)
+  - 🚨 Detected Anomalies (color-coded alerts)
+  - 🌾 Feed Optimization (recommendations with scores)
+  - 💊 Health & Mortality Risks (multi-tier warnings)
+  - 🌡️ Environmental Conditions (temperature/humidity alerts)
+  - Farm Health Status (purple KPI card)
+- 💡 AI-Powered Tooltips (hover explanations on MetricCards)
+- 📊 Dual Anomaly Detection (Z-score + Isolation Forest)
+
+**Technical Improvements**:
+
+- Comprehensive AI recommendation engine with 5 analysis types
+- Dual anomaly detection for higher accuracy (statistical + ML)
+- 8-section weekly farm manager report with actionable insights
+- Lazy-loading tooltips for performance optimization
+- Metric-specific corrective actions (3 per anomaly)
+- Severity-based prioritization (critical/high/medium)
+- Professional UI with color-coding, emojis, hover animations
+
+---
+
+### **November 18, 2025 - Phase 3: UI/UX Enhancements** ⭐
+
+#### Phase 3 Objective:
+
+Implement weekly aggregation with week-over-week comparison, enhance trend indicators with lucide-react icons, add data refresh buttons to key pages, rebuild Docker, and update documentation.
+
+#### Step 1: Weekly Aggregation Backend ✅
+
+**Created** `backend/services/weekly_aggregator.py` (100+ lines):
+
+- Function: `aggregate_weekly_data()` - Groups CSV data by week_num = (age_days // 7) + 1
+- Calculates per week: avg_weight, total_eggs, fcr, mortality_rate, total_feed, total_water, avg_temp, avg_humidity, birds_start, birds_end
+- Function: `get_week_comparison(room_id)` - Calculates week-over-week percentage changes for weight, eggs, fcr, mortality
+- Returns: weekly_data array with all metrics grouped by room_id and week
+
+**Modified** `backend/routers/analysis.py`:
+
+- Added import: `from services.weekly_aggregator import aggregate_weekly_data, get_week_comparison`
+- NEW endpoint: `@router.get('/weekly')` - Returns aggregate_weekly_data()
+- NEW endpoint: `@router.get('/weekly/comparison?room_id={id}')` - Returns get_week_comparison() with optional room filter
+- Both endpoints return JSON with weekly metrics and comparison arrays
+
+#### Step 2: Weekly Aggregation Frontend ✅
+
+**Created** `frontend/pages/weekly.js` (280+ lines):
+
+- Complete weekly aggregation view page
+- State: weeklyData[], comparisons[], loading, error
+- Layout: PageContainer wide, responsive grids (1→2→3 columns)
+- **Features**:
+  - Header with title and RefreshButton integration
+  - Weekly metric cards grouped by room_id
+  - Each card shows: Week number, bird counts, 8 metrics (weight, eggs, fcr, mortality, feed, water, temp, humidity)
+  - Week-over-week comparison table with 6 columns (Room, Week, Weight Change, Egg Change, FCR Change, Mortality Change)
+  - Trend visualization with TrendingUp/Down/Minus icons from lucide-react
+  - Color-coded percentage changes (green/red/gray)
+- Animations: animate-fade-in-up, animate-delay-200, hover effects
+- Error handling: Yellow warning card, empty state message
+
+**Modified** `frontend/utils/api.js`:
+
+- NEW function: `getWeeklyData()` - Fetches /analysis/weekly with error handling
+- NEW function: `getWeekComparison(roomId)` - Fetches comparison with optional room filter
+- Error handling: try-catch blocks returning {error: message}
+
+#### Step 3: Enhanced Trend Indicators ✅
+
+**Modified** `frontend/components/ui/MetricCard.js`:
+
+- Replaced Unicode symbols (▲▼—) with lucide-react icons
+- Import: `TrendingUp`, `TrendingDown`, `Minus` from 'lucide-react'
+- Dynamic icon selection based on trend value (positive/negative/neutral)
+- Enhanced styling: Increased padding (px-2.5 py-1.5), larger icon size (w-3.5 h-3.5)
+- Badge display: Icon + percentage with proper spacing (gap-1.5)
+- Maintained color scheme: green-600/100, red-500/100, gray-500/100
+
+**Verified Components**:
+
+- RoomCard: Already uses TrendIndicator component ✅
+- FeedEfficiencyCard: Proper trend support ✅
+- DashboardHeader: Simple header (no trend indicators needed) ✅
+
+#### Step 4: Data Refresh Button Integration ✅
+
+**Created** `frontend/components/ui/RefreshButton.js` (48 lines):
+
+- Reusable refresh button component
+- Props: onRefresh (callback), className
+- State: isRefreshing (boolean) with 1-second minimum spinner
+- UI: Green button (bg-green-600 hover:bg-green-700), RefreshCw icon from lucide-react
+- Animation: Spinner shows with animate-spin class
+- Responsive: Hides text on mobile (sm:inline)
+
+**Modified** `frontend/pages/dashboard.js`:
+
+- Added import: `RefreshButton` from '@/components/ui/RefreshButton'
+- Integration: Added RefreshButton next to DashboardHeader in flex container
+- Callback: Passes fetchDashboardData function as onRefresh prop
+- Placement: Top-right of page header
+
+**Modified** `frontend/pages/analytics.js`:
+
+- Added import: `RefreshButton` from '@/components/ui/RefreshButton'
+- Integration: Added RefreshButton in header flex container with comparison toggle button
+- Callback: Passes fetchAnalyticsData function as onRefresh prop
+- Placement: Between title and comparison button
+
+**Modified** `frontend/pages/reports.js`:
+
+- Added import: `RefreshButton` from '@/components/ui/RefreshButton'
+- Integration: Added RefreshButton in header flex container before DateRangePicker
+- Callback: Reloads page and clears date filter
+- Placement: Before date range picker and export button
+
+#### Step 5: Docker Rebuild and Validation ✅
+
+**Docker Commands Executed**:
+
+```powershell
+docker compose build
+docker compose up -d
+docker ps
+```
+
+**Build Results**:
+
+- Build time: 20.5 seconds (26/26 steps)
+- Frontend: node:18-alpine, new code copied, exported successfully
+- Backend: python:3.11-slim, new code copied, exported successfully
+- Images: `it_hacks_25-frontend:latest`, `it_hacks_25-backend:latest`
+- Status: ✅ Both containers built and started successfully
+
+**Endpoint Validation**:
+
+```powershell
+curl http://localhost:8000/analysis/weekly
+curl http://localhost:8000/analysis/weekly/comparison
+```
+
+- `/analysis/weekly` response: 200 OK, 15,262 bytes JSON (weekly_data array)
+- `/analysis/weekly/comparison` response: 200 OK, 42,053 bytes JSON (comparisons array)
+- Both endpoints: ✅ Working correctly
+
+**Container Status**:
+
+- it_hacks_frontend: Up (port 3000 → 3000) ✅
+- it_hacks_backend: Up (port 8000 → 8000) ✅
+
+#### Step 6: Documentation Update ✅
+
+**Updated Files**:
+
+- INSTRUCTIONS_MASTER.md: Added Phase 3 section with complete implementation details
+- Version History: Updated to v0.5.0 (Phase 3 UI/UX Enhancements)
+
+#### Phase 3 Summary:
+
+**Files Created**:
+
+- `backend/services/weekly_aggregator.py` (100+ lines)
+- `frontend/components/ui/RefreshButton.js` (48 lines)
+- `frontend/pages/weekly.js` (280+ lines)
+
+**Files Modified**:
+
+- `backend/routers/analysis.py` (added 2 endpoints)
+- `frontend/utils/api.js` (added 2 API functions)
+- `frontend/components/ui/MetricCard.js` (replaced symbols with lucide-react icons)
+- `frontend/pages/dashboard.js` (added RefreshButton)
+- `frontend/pages/analytics.js` (added RefreshButton)
+- `frontend/pages/reports.js` (added RefreshButton)
+
+**New Backend Endpoints**:
+
+- `GET /analysis/weekly` - Returns weekly aggregated data for all rooms
+- `GET /analysis/weekly/comparison?room_id={id}` - Returns week-over-week percentage changes
+
+**New Frontend Features**:
+
+- 📅 Weekly Aggregation Page (complete view with cards and comparison table)
+- 📈 Enhanced Trend Indicators (lucide-react icons: TrendingUp/Down/Minus)
+- 🔄 Data Refresh Button (integrated on Dashboard, Analytics, Reports pages)
+- 🎨 Professional UI (color-coded trends, hover animations, responsive layout)
+
+**Technical Improvements**:
+
+- Week calculation from age_days: week_num = (age_days // 7) + 1
+- Comprehensive weekly metrics: 10+ data points per week
+- Week-over-week comparison: percentage changes for key metrics
+- Reusable RefreshButton component with spinner animation
+- Enhanced MetricCard with icon-based trends (better accessibility)
+- Docker validated: all endpoints tested and working
+
+---
+
 ## 🔧 Current Technical State
 
 ### Frontend Dependencies:
@@ -681,8 +1088,10 @@ docker compose up -d
 
 - FastAPI (Python 3.11)
 - pandas (CSV processing)
-- scikit-learn (ML models)
+- scikit-learn (ML models: RandomForest, IsolationForest)
+- scipy (statistical analysis: Z-score)
 - joblib (model persistence)
+- numpy (numerical operations)
 - uvicorn (ASGI server)
 
 ### CSV Data Structure (V3):
@@ -692,12 +1101,20 @@ docker compose up -d
 
 ### API Endpoints:
 
-- `POST /upload/csv` - Upload CSV files
+- `POST /upload/csv` - Upload CSV files (triggers auto-training)
 - `GET /upload/files` - List all CSV files
 - `GET /upload/preview/{path}?rows=N&start_date=YYYY-MM-DD&end_date=YYYY-MM-DD` - Preview with date filtering
 - `GET /api/analysis/rooms` - Get room list
 - `GET /api/analysis/rooms/{room_id}/kpis` - Room KPIs
-- `GET /api/analysis/rooms/{room_id}/predict` - AI predictions
+- `GET /api/analysis/rooms/{room_id}/predict` - AI predictions and feed recommendations
+- `GET /analysis/rooms/{room_id}/forecast?days={1-30}` - Weight forecast generation
+- `GET /analysis/weekly` - Weekly aggregated data for all rooms
+- `GET /analysis/weekly/comparison?room_id={id}` - Week-over-week percentage changes
+- `GET /ai/analyze?file_path={path}` - **NEW** Comprehensive AI analysis (feed, mortality, environment)
+- `GET /ai/anomalies?file_path={path}&sensitivity={0.1}` - **NEW** Anomaly detection with Z-score + Isolation Forest
+- `GET /ai/report/weekly?file_path={path}` - **NEW** Weekly farm manager report (8 sections)
+- `GET /ai/explain-metric?metric={name}&value={val}&change={pct}&room_id={id}` - **NEW** Metric explanations for tooltips
+- `GET /ai/health` - **NEW** Health check endpoint
 
 ### Layout System:
 
@@ -740,8 +1157,15 @@ docker compose up -d
 **AI Features**:
 
 - [x] Weight prediction model
-- [x] Feed recommendations
-- [x] Integration with frontend
+- [x] Feed recommendations with emojis and confidence scores
+- [x] 7-day weight forecast charts
+- [x] Auto-training on CSV upload
+- [x] Integration with frontend (Dashboard + Analytics pages)
+- [x] AI recommendation engine (feed efficiency, mortality risk, environmental warnings)
+- [x] Dual anomaly detection (Z-score + Isolation Forest)
+- [x] Weekly farm manager report (8 sections)
+- [x] AI-powered tooltips (hover metric explanations)
+- [x] Dashboard AI Intelligence Insights section (anomaly alerts, recommendations)
 
 **UX**:
 
@@ -751,23 +1175,20 @@ docker compose up -d
 - [x] Hover animations
 - [x] Mobile hamburger menu
 - [x] i18n support (4 languages)
+- [x] Data refresh buttons (Dashboard, Analytics, Reports)
+- [x] Weekly aggregation view
+- [x] Week-over-week comparison
+- [x] Enhanced trend indicators with lucide-react icons
 
 ### 🚧 Future Enhancements (Not in Scope):
 
-**Phase 2: AI Enhancement** (Planned):
+**Phase 4: Advanced Features** (Future):
 
-- [ ] Auto-train model on CSV upload
-- [ ] 7-day predictive analytics
-- [ ] Real-time recommendations
-- [ ] Model performance metrics
-
-**Phase 3: UX Improvements** (Planned):
-
-- [ ] Weekly aggregation view
-- [ ] Week-over-week comparison
-- [ ] Trend indicators with % change
-- [ ] Data refresh button
-- [ ] WebSocket for live updates
+- [ ] Real-time WebSocket updates
+- [ ] Custom alert thresholds
+- [ ] Email/SMS notifications
+- [ ] Model performance dashboard
+- [ ] A/B testing for feed recommendations
 
 **Other**:
 
@@ -904,6 +1325,9 @@ docker compose ps
 - **v0.3.0** (Nov 17, 2025) - Data generator V3 and column fixes
 - **v0.4.0** (Nov 18, 2025) - Phase 1 features (PDF/JSON export, AI, date filtering)
 - **v0.4.1** (Nov 18, 2025) - Phase 1 verification and Docker build
+- **v0.5.0** (Nov 18, 2025) - Phase 2 AI enhancements (auto-training, forecasts, feed recommendations)
+- **v0.6.0** (Nov 18, 2025) - Phase 3 UI/UX enhancements (weekly aggregation, trend icons, refresh buttons)
+- **v0.7.0** (Nov 19, 2025) - Phase 4 AI Intelligence Layer (recommendation engine, anomaly detection, weekly reports, tooltips)
 
 ---
 
