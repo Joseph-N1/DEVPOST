@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -10,6 +12,21 @@ import Loading from '@/components/ui/Loading';
 import AnalyticsChart from '@/components/ui/AnalyticsChart';
 import ChartContainer from '@/components/ui/ChartContainer';
 import RefreshButton from '@/components/ui/RefreshButton';
+
+// Phase 5 Advanced Components
+import RadarChart from '@/components/charts/advanced/RadarChart';
+import Heatmap from '@/components/charts/advanced/Heatmap';
+import CorrelationMatrix from '@/components/charts/advanced/CorrelationMatrix';
+import ScatterPlot from '@/components/charts/advanced/ScatterPlot';
+import BoxPlot from '@/components/charts/advanced/BoxPlot';
+import StackedAreaChart from '@/components/charts/advanced/StackedAreaChart';
+import Sparkline from '@/components/charts/advanced/Sparkline';
+import MultiRoomComparison from '@/components/ui/MultiRoomComparison';
+import DrillDownModal from '@/components/ui/DrillDownModal';
+import GlobalFilterPanel from '@/components/ui/GlobalFilterPanel';
+
+// State Management & API
+import { useFilterStore } from '@/store/filterStore';
 import { getWeightForecast, getWeeklyForecast, getModelMetrics, getAccuracyHistory } from '@/utils/api';
 
 export default function AnalyticsPage() {
@@ -24,7 +41,17 @@ export default function AnalyticsPage() {
   const [modelMetrics, setModelMetrics] = useState(null);
   const [accuracyHistory, setAccuracyHistory] = useState(null);
   const [showWeekly, setShowWeekly] = useState(false);
+  
+  // Phase 5 State
+  const [activeView, setActiveView] = useState('overview');
+  const [drillDownModal, setDrillDownModal] = useState({
+    isOpen: false,
+    data: null,
+    metric: null,
+    room: null
+  });
 
+  const { applyFilters, setAvailableRooms } = useFilterStore();
   const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
   useEffect(() => {
@@ -54,6 +81,7 @@ export default function AnalyticsPage() {
         // Extract unique rooms
         const uniqueRooms = [...new Set(previewData.preview_rows.map(row => row.room_id))];
         setRooms(uniqueRooms);
+        setAvailableRooms(uniqueRooms);
         
         // Fetch forecasts for all rooms
         const forecastData = {};
@@ -130,14 +158,17 @@ export default function AnalyticsPage() {
     
     setCsvData(sampleData);
     setRooms(sampleRooms);
+    setAvailableRooms(sampleRooms);
   };
 
   const generateCharts = () => {
     if (!csvData || csvData.length === 0) return [];
 
+    const filteredData = applyFilters(csvData);
+
     const aggregateByAge = (dataKey) => {
       const aggregated = {};
-      csvData.forEach(row => {
+      filteredData.forEach(row => {
         const age = row.age_days;
         if (!aggregated[age]) {
           aggregated[age] = { sum: 0, count: 0 };
@@ -505,6 +536,24 @@ export default function AnalyticsPage() {
             </Card>
           </section>
         )}
+        
+        {/* Phase 5: Multi-Room Comparison */}
+        <section className="mt-10 animate-fade-in-up">
+          <MultiRoomComparison data={csvData || []} />
+        </section>
+
+        {/* Phase 5: Drill-Down Modal */}
+        <DrillDownModal
+          isOpen={drillDownModal.isOpen}
+          onClose={() => setDrillDownModal({ ...drillDownModal, isOpen: false })}
+          data={drillDownModal.data}
+          metric={drillDownModal.metric}
+          room={drillDownModal.room}
+          allData={applyFilters(csvData || [])}
+        />
+
+        {/* Phase 5: Global Filter Panel */}
+        <GlobalFilterPanel />
       </PageContainer>
     </Layout>
   );
