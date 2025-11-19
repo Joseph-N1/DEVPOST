@@ -19,11 +19,14 @@ def analyze_csv_data(file_path: str = None) -> Dict[str, Any]:
     try:
         # Find CSV file
         if file_path:
-            df = pd.read_csv(file_path, parse_dates=['date'])
+            csv_path = DATA_DIR / file_path if not file_path.startswith('/') else Path(file_path)
+            df = pd.read_csv(csv_path, parse_dates=['date'])
         else:
             csv_files = list(DATA_DIR.glob('*.csv'))
             if not csv_files:
                 return {'error': 'No CSV files found'}
+            # Use the largest/most recent CSV file
+            csv_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
             df = pd.read_csv(csv_files[0], parse_dates=['date'])
         
         # Get room list

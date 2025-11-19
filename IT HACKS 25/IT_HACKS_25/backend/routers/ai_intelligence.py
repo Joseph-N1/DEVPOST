@@ -5,10 +5,12 @@ Provides endpoints for AI recommendations, anomaly detection, reports, and metri
 
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
+import logging
 from services.ai_intelligence import analyze_csv_data
 from ml.anomaly_detector import detect_anomalies
 from services.farm_report_generator import generate_weekly_report
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix='/ai', tags=['AI Intelligence'])
 
 @router.get('/analyze')
@@ -22,13 +24,17 @@ async def get_ai_analysis(file_path: Optional[str] = None):
     - Weekly health summary
     """
     try:
+        logger.info(f"AI Analysis requested with file_path: {file_path}")
         result = analyze_csv_data(file_path)
         
         if 'error' in result:
+            logger.error(f"AI Analysis error: {result['error']}")
             raise HTTPException(status_code=404, detail=result['error'])
         
+        logger.info("AI Analysis completed successfully")
         return result
     except Exception as e:
+        logger.error(f"AI Analysis exception: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
