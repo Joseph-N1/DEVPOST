@@ -17,6 +17,7 @@ export default function Upload() {
   const [previewData, setPreviewData] = useState(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [clearExisting, setClearExisting] = useState(false);
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -51,7 +52,8 @@ export default function Upload() {
     form.append("file", file);
 
     try {
-      const response = await axios.post(`${apiBaseUrl}/upload/csv`, form, {
+      const url = `${apiBaseUrl}/upload/csv?clear_existing=${clearExisting}`;
+      const response = await axios.post(url, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setMessage(`✅ Upload successful! File saved as: ${response.data.filename}`);
@@ -100,6 +102,22 @@ export default function Upload() {
           <DashboardSection title="Upload Data" subtitle="Add new CSV files for analysis">
             <GlassCard>
               <UploadBox onFileSelect={setFile} />
+
+              {/* Clear Existing Data Checkbox */}
+              <div className="mt-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={clearExisting}
+                    onChange={(e) => setClearExisting(e.target.checked)}
+                    className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                  />
+                  <span className="text-sm text-gray-700">
+                    Clear existing data before upload 
+                    <span className="text-red-600 font-medium"> (⚠️ This will delete all farms, rooms, and metrics)</span>
+                  </span>
+                </label>
+              </div>
 
               <div className="mt-4 flex flex-wrap items-center gap-3">
                 <button

@@ -188,19 +188,22 @@ export default function MultiRoomComparison({ data = [] }) {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            {availableRooms.map(room => (
-              <button
-                key={room}
-                onClick={() => toggleRoom(room)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  selectedRooms.includes(room)
-                    ? 'bg-blue-600 text-white shadow-md scale-105'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {room}
-              </button>
-            ))}
+            {availableRooms.map(room => {
+              const roomId = typeof room === 'object' ? room.room_id : room;
+              return (
+                <button
+                  key={roomId}
+                  onClick={() => toggleRoom(roomId)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    selectedRooms.includes(roomId)
+                      ? 'bg-blue-600 text-white shadow-md scale-105'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {roomId}
+                </button>
+              );
+            })}
           </div>
         </div>
 

@@ -53,7 +53,8 @@ const useFilterStore = create((set, get) => ({
   
   selectAllRooms: () => {
     const { availableRooms } = get();
-    set({ selectedRooms: availableRooms });
+    const roomIds = availableRooms.map(r => (typeof r === 'object' ? r.room_id : r));
+    set({ selectedRooms: roomIds });
   },
   
   clearRoomSelection: () => set({ selectedRooms: [] }),

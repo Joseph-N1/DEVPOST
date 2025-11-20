@@ -54,7 +54,7 @@ export async function getAllRoomsPredictions() {
   try {
     const { rooms } = await getRooms();
     const predictions = await Promise.all(
-      rooms.map(room => getRoomPredictions(room))
+      rooms.map(room => getRoomPredictions(room.id))
     );
     return predictions.filter(p => !p.error);
   } catch (error) {
@@ -283,4 +283,99 @@ export async function getMetricExplanation(metric, value, change = 0, roomId = n
       recommended_action: 'Monitor trends and consult documentation'
     };
   }
+}
+
+// ============================================================================
+// PHASE 7: ML PREDICTIONS & MODEL MANAGEMENT API
+// ============================================================================
+
+/**
+ * Train a new ML model
+ */
+export async function trainModel(modelType = 'random_forest') {
+  return fetchAPI('/ml/train?model_type=' + modelType, {
+    method: 'POST',
+  });
+}
+
+/**
+ * Get list of all trained models
+ */
+export async function getMLModels() {
+  return fetchAPI('/ml/models');
+}
+
+/**
+ * Get active model information
+ */
+export async function getActiveModel() {
+  return fetchAPI('/ml/models/active/info');
+}
+
+/**
+ * Get detailed model information
+ */
+export async function getModelDetails(modelId) {
+  return fetchAPI(`/ml/models/${modelId}`);
+}
+
+/**
+ * Activate a specific model version
+ */
+export async function activateModel(modelId) {
+  return fetchAPI(`/ml/models/${modelId}/activate`, {
+    method: 'POST',
+  });
+}
+
+/**
+ * Get multi-horizon predictions for a room (7/14/30 days)
+ */
+export async function getRoomMLPredictions(roomId, horizons = [7, 14, 30], savePredictions = true) {
+  const params = new URLSearchParams();
+  horizons.forEach(h => params.append('horizons', h));
+  params.append('save_predictions', savePredictions);
+  
+  return fetchAPI(`/ml/predict/room/${roomId}?${params.toString()}`, {
+    method: 'POST',
+  });
+}
+
+/**
+ * Get predictions for all rooms in a farm
+ */
+export async function getFarmMLPredictions(farmId, horizons = [7, 14, 30]) {
+  const params = new URLSearchParams();
+  horizons.forEach(h => params.append('horizons', h));
+  
+  return fetchAPI(`/ml/predict/farm/${farmId}?${params.toString()}`, {
+    method: 'POST',
+  });
+}
+
+/**
+ * Get prediction history from database
+ */
+export async function getPredictionHistory(filters = {}) {
+  const params = new URLSearchParams();
+  if (filters.farm_id) params.append('farm_id', filters.farm_id);
+  if (filters.room_id) params.append('room_id', filters.room_id);
+  if (filters.metric_name) params.append('metric_name', filters.metric_name);
+  if (filters.days) params.append('days', filters.days);
+  
+  return fetchAPI(`/ml/predictions/history?${params.toString()}`);
+}
+
+/**
+ * Get ML system status and health
+ */
+export async function getMLStatus() {
+  return fetchAPI('/ml/monitor/status');
+}
+
+/**
+ * Get model performance metrics
+ */
+export async function getMLPerformance() {
+  return fetchAPI('/ml/monitor/performance');
 }

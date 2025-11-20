@@ -1,9 +1,16 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Query
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query, Depends
 from pathlib import Path
 from typing import List, Dict, Any
 import pandas as pd
 import os
-from services.ai_analyzer import train_example
+from sqlalchemy.ext.asyncio import AsyncSession
+from database import get_db
+from services.csv_ingest import ingest_to_db, CSVIngestError
+from cache import invalidate_farm_cache
+from ml.train import train_new_model
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["upload"])
 
@@ -11,12 +18,44 @@ router = APIRouter(tags=["upload"])
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 SAMPLE_DATA_DIR = DATA_DIR / "sample_data"
 
-# Directory where uploads will be saved (ensure path exists and is writable)
+# Directory where uploads will be saved (maintain file storage for backward compatibility)
 UPLOAD_DIR = DATA_DIR / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 @router.post("/csv")
-async def upload_csv(file: UploadFile = File(...)):
+async def upload_csv(
+    file: UploadFile = File(...),
+    farm_name: str = Query(default=None, description="Optional farm name"),
+    clear_existing: bool = Query(default=False, description="Clear existing data before upload"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Upload CSV file and ingest into database.
+    
+    Process:
+    1. Save CSV file to disk (for backup/reference)
+    2. Ingest data into PostgreSQL via ETL pipeline
+    3. Invalidate cache for the farm
+    4. Auto-train ML model
+    
+    Args:
+        file: CSV file upload
+        farm_name: Optional farm name (auto-generated if not provided)
+        db: Database session
+        
+    Returns:
+        {
+            "filename": str,
+            "saved_to": str,
+            "farm_id": int,
+            "farm_name": str,
+            "rooms_created": int,
+            "metrics_inserted": int,
+            "date_range": {"start": date, "end": date},
+            "training_triggered": bool,
+            "training_result": dict
+        }
+    """
     # Basic validation
     filename = Path(file.filename).name
     if not filename.lower().endswith(".csv"):
@@ -31,24 +70,47 @@ async def upload_csv(file: UploadFile = File(...)):
                 if not chunk:
                     break
                 f.write(chunk)
+        
+        logger.info(f"CSV saved to disk: {dest}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save file: {e}")
 
-    # 🚀 AUTO-TRAIN MODEL AFTER UPLOAD
+    # 🔄 ETL PIPELINE: CSV → PostgreSQL
+    try:
+        ingestion_result = await ingest_to_db(
+            csv_path=str(dest),
+            farm_name=farm_name,
+            clear_existing=clear_existing,
+            db=db
+        )
+        logger.info(f"ETL ingestion complete: {ingestion_result}")
+        
+        # Invalidate cache for this farm
+        await invalidate_farm_cache(ingestion_result['farm_id'])
+        
+    except CSVIngestError as e:
+        logger.error(f"CSV ingestion failed: {e}")
+        raise HTTPException(status_code=400, detail=f"Data ingestion failed: {str(e)}")
+    except Exception as e:
+        logger.error(f"Unexpected ingestion error: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error during ingestion: {str(e)}")
+
+    # 🚀 AUTO-TRAIN MODEL AFTER UPLOAD (Phase 7)
     training_result = None
     try:
-        training_result = train_example()
-        if training_result:
-            print(f"✅ Model auto-trained after upload: {training_result}")
+        training_result = train_new_model(csv_path=str(dest), model_type='random_forest')
+        if training_result and training_result.get('success'):
+            logger.info(f"Model auto-trained after upload: {training_result['version']}")
     except Exception as train_error:
-        print(f"⚠️ Auto-training failed (non-fatal): {train_error}")
+        logger.warning(f"Auto-training failed (non-fatal): {train_error}")
         # Don't fail the upload if training fails
 
     return {
         "filename": filename, 
         "saved_to": str(dest),
-        "training_triggered": training_result is not None,
-        "training_result": training_result
+        **ingestion_result,
+        "training_triggered": training_result is not None and training_result.get('success', False),
+        "training_result": training_result if training_result and training_result.get('success') else None
     }
 
 @router.get('/files')
@@ -100,7 +162,7 @@ async def list_csv_files():
 @router.get('/preview/{file_path:path}')
 async def preview_csv(
     file_path: str,
-    rows: int = Query(default=5, ge=1, le=3000),
+    rows: int = Query(default=5, ge=1, le=15000),
     start_date: str = Query(default=None),
     end_date: str = Query(default=None)
 ):

@@ -12,3 +12,24 @@ shap==0.42.1
 numpy==1.25.2
 scipy==1.11.2
 requests==2.31.0
+
+# Phase 6: Database & Caching Dependencies
+psycopg2-binary==2.9.9
+alembic==1.12.1
+redis==5.0.1
+sqlmodel==0.0.14
+asyncpg==0.29.0
+
+# Phase 7: Advanced ML & Deep Learning
+torch==2.1.0
+statsmodels==0.14.0
+prophet==1.1.5
+lightgbm==4.1.0
+
+# Phase 8: Authentication & Authorization
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1  # Pin bcrypt to 4.0.1 for passlib compatibility
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6
+slowapi==0.1.9
+email-validator==2.1.0

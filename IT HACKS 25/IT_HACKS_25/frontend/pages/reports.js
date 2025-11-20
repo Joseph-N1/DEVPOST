@@ -45,7 +45,7 @@ export default function ReportsPage() {
         const latestFile = sortedFiles[0];
 
         // Build URL with date range if set
-        let url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=3000`;
+        let url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=15000`;
         if (dateRange) {
           url += `&start_date=${dateRange.startDate}&end_date=${dateRange.endDate}`;
         }

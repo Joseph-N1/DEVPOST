@@ -34,7 +34,7 @@ export default function ComparisonSelector({ rooms = [], features = [], data = n
   };
 
   const selectAllRooms = () => {
-    setSelectedRooms(rooms.map(r => r.id || r));
+    setSelectedRooms(rooms.map(r => (typeof r === 'object' ? r.room_id : r)));
   };
 
   const clearSelection = () => {
@@ -179,7 +179,7 @@ export default function ComparisonSelector({ rooms = [], features = [], data = n
         </label>
         <div className="flex flex-wrap gap-2 mb-2">
           {rooms.map((room) => {
-            const roomId = room.id || room;
+            const roomId = typeof room === 'object' ? room.room_id : room;
             return (
               <button
                 key={roomId}

@@ -135,7 +135,7 @@ export default function DrillDownModal({
               Drill-Down Analysis
             </h2>
             <p className="text-sm text-blue-100 mt-1">
-              {room} • {metric?.replace(/_/g, ' ').toUpperCase()}
+              {typeof room === 'object' ? room?.room_id : room} • {metric?.replace(/_/g, ' ').toUpperCase()}
             </p>
           </div>
           <button

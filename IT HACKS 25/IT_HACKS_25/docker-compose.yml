@@ -1,4 +1,36 @@
 services:
+  postgres:
+    image: postgres:15
+    container_name: eco_farm_postgres
+    environment:
+      - POSTGRES_USER=farm
+      - POSTGRES_PASSWORD=farm123
+      - POSTGRES_DB=eco_farm
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - farmnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U farm"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: eco_farm_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - farmnet
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   backend:
     build: ./backend
     container_name: it_hacks_backend
@@ -8,7 +40,19 @@ services:
       - ./backend:/app
     environment:
       - PYTHONUNBUFFERED=1
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      - DATABASE_URL=postgresql://farm:farm123@postgres:5432/eco_farm
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_USER=farm
+      - POSTGRES_PASSWORD=farm123
+      - JWT_SECRET_KEY=eco-farm-jwt-secret-key-change-in-production-2025
+      - REFRESH_SECRET_KEY=eco-farm-refresh-secret-key-change-in-production-2025
+    networks:
+      - farmnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   frontend:
     build: ./frontend
@@ -23,4 +67,10 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    networks:
+      - farmnet
     command: npm run dev
+
+networks:
+  farmnet:
+    driver: bridge

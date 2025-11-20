@@ -27,7 +27,7 @@ import GlobalFilterPanel from '@/components/ui/GlobalFilterPanel';
 
 // State Management & API
 import { useFilterStore } from '@/store/filterStore';
-import { getWeightForecast, getWeeklyForecast, getModelMetrics, getAccuracyHistory } from '@/utils/api';
+import { getRooms, getWeightForecast, getWeeklyForecast, getModelMetrics, getAccuracyHistory } from '@/utils/api';
 
 export default function AnalyticsPage() {
   const { t } = useTranslation();
@@ -72,32 +72,48 @@ export default function AnalyticsPage() {
         
         // Fetch full preview to get data
         const previewResponse = await axios.get(
-          `${apiBase}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=3000`
+          `${apiBase}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=15000`
         );
         
         const previewData = previewResponse.data;
         setCsvData(previewData.preview_rows);
         
-        // Extract unique rooms
-        const uniqueRooms = [...new Set(previewData.preview_rows.map(row => row.room_id))];
-        setRooms(uniqueRooms);
-        setAvailableRooms(uniqueRooms);
-        
-        // Fetch forecasts for all rooms
-        const forecastData = {};
-        const weeklyForecastData = {};
-        for (const roomId of uniqueRooms.slice(0, 3)) { // Limit to first 3 rooms
-          const forecast = await getWeightForecast(roomId, 7);
-          if (forecast) {
-            forecastData[roomId] = forecast;
+        // Fetch actual rooms from database (with database IDs)
+        try {
+          const roomsData = await getRooms();
+          if (roomsData && roomsData.rooms) {
+            const roomsList = roomsData.rooms;
+            setRooms(roomsList);
+            setAvailableRooms(roomsList);
+            
+            // Fetch forecasts for first 3 rooms using database IDs
+            const forecastData = {};
+            const weeklyForecastData = {};
+            for (const room of roomsList.slice(0, 3)) {
+              const forecast = await getWeightForecast(room.id, 7); // Use room.id (database ID)
+              if (forecast) {
+                forecastData[room.id] = forecast;
+              }
+              const weeklyForecast = await getWeeklyForecast(room.id, 4);
+              if (weeklyForecast) {
+                weeklyForecastData[room.id] = weeklyForecast;
+              }
+            }
+            setForecasts(forecastData);
+            setWeeklyForecasts(weeklyForecastData);
+          } else {
+            // Fallback: use room_id strings from CSV
+            const uniqueRooms = [...new Set(previewData.preview_rows.map(row => row.room_id))];
+            setRooms(uniqueRooms);
+            setAvailableRooms(uniqueRooms);
           }
-          const weeklyForecast = await getWeeklyForecast(roomId, 4);
-          if (weeklyForecast) {
-            weeklyForecastData[roomId] = weeklyForecast;
-          }
+        } catch (roomError) {
+          console.warn('Could not fetch rooms from database, using CSV room_ids:', roomError);
+          // Fallback: use room_id strings from CSV
+          const uniqueRooms = [...new Set(previewData.preview_rows.map(row => row.room_id))];
+          setRooms(uniqueRooms);
+          setAvailableRooms(uniqueRooms);
         }
-        setForecasts(forecastData);
-        setWeeklyForecasts(weeklyForecastData);
         
         // Fetch model metrics and accuracy history with error handling
         try {

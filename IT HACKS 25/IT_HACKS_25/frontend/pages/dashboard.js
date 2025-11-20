@@ -12,7 +12,7 @@ import FeedEfficiencyCard from "@/components/ui/FeedEfficiencyCard";
 import DashboardHeader from "@/components/ui/DashboardHeader";
 import Loading from "@/components/ui/Loading";
 import RefreshButton from "@/components/ui/RefreshButton";
-import { getAllRoomsPredictions, getFeedRecommendations, getAIAnalysis, getAnomalies } from "@/utils/api";
+import { getAllRoomsPredictions, getFeedRecommendations, getAIAnalysis, getAnomalies, getRooms, getRoomKPIs } from "@/utils/api";
 
 export default function DashboardPage() {
   const [rooms, setRooms] = useState([]);
@@ -29,77 +29,71 @@ export default function DashboardPage() {
     try {
       setLoading(true);
 
-      const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      try {
+        // Fetch rooms from database
+        const roomsResponse = await getRooms();
+        const roomsList = roomsResponse.rooms || [];
 
-        const filesResponse = await axios.get(`${api}/upload/files`);
-        const files = filesResponse.data || [];
-
-        if (!files.length) {
-          setMessage("No CSV uploaded yet. Upload a file to see room data.");
+        if (!roomsList.length) {
+          setMessage("No rooms found. Upload a CSV file to create farms and rooms.");
           setLoading(false);
           return;
         }
 
-        const latestFile = files.sort(
-          (a, b) => new Date(b.modified) - new Date(a.modified)
-        )[0];
-
-        const dataResponse = await axios.get(
-          `${api}/upload/preview/${encodeURIComponent(latestFile.path)}?rows=3000`
-        );
-
-        const csvData = dataResponse.data.preview_rows || [];
-
-        const roomIds = [...new Set(csvData.map(r => r.room_id))].sort();
+        // Store room IDs for UI
+        const roomIds = roomsList.map(r => r.room_id);
         setRooms(roomIds);
 
-        const roomStats = roomIds.map(roomId => {
-          const roomRows = csvData.filter(r => r.room_id === roomId);
-
-          const latest = roomRows.reduce((acc, row) =>
-            (row.age_days || 0) > (acc.age_days || 0) ? row : acc,
-          roomRows[0]);
-
-          const mortalityRate = parseFloat(latest.mortality_rate) || 0;
-
-          const totalEggs = roomRows.reduce((s, r) => s + (parseFloat(r.eggs_produced) || 0), 0);
-          const avgWeight = roomRows.reduce((s, r) => s + (parseFloat(r.avg_weight_kg) || 0), 0)
-            / roomRows.length;
-
-          return {
-            id: roomId,
-            title: `Room ${roomId}`,
-            birds: Math.round(latest.birds_end),
-            avgWeight: `${avgWeight.toFixed(2)} kg`,
-            mortality: `${mortalityRate.toFixed(2)}%`,
-            eggsCollected: Math.round(totalEggs),
-          };
+        // Fetch KPIs for each room
+        const roomStatsPromises = roomsList.map(async (room) => {
+          try {
+            const kpis = await getRoomKPIs(room.id);
+            return {
+              id: room.room_id,
+              title: `Room ${room.room_id}`,
+              birds: room.birds_start || 0,
+              avgWeight: `${kpis.avg_weight_kg || 0} kg`,
+              mortality: `${kpis.avg_mortality_rate || 0}%`,
+              eggsCollected: kpis.total_eggs_produced || 0,
+              dbId: room.id // Store database ID for API calls
+            };
+          } catch (error) {
+            console.error(`Failed to fetch KPIs for room ${room.room_id}:`, error);
+            return {
+              id: room.room_id,
+              title: `Room ${room.room_id}`,
+              birds: room.birds_start || 0,
+              avgWeight: "0 kg",
+              mortality: "0%",
+              eggsCollected: 0,
+              dbId: room.id
+            };
+          }
         });
 
+        const roomStats = await Promise.all(roomStatsPromises);
         setRoomsData(roomStats);
 
-        const latestRows = roomIds.map(roomId => {
-          const roomRows = csvData.filter(r => r.room_id === roomId);
-          return roomRows.reduce((acc, row) =>
-            (row.age_days || 0) > (acc.age_days || 0) ? row : acc,
-          roomRows[0]);
-        });
+        // Calculate farm-wide metrics from room KPIs
+        const allKpisPromises = roomsList.map(room => getRoomKPIs(room.id).catch(() => null));
+        const allKpis = (await Promise.all(allKpisPromises)).filter(k => k !== null);
 
-        const totalBirds = latestRows.reduce((s, r) => s + (parseFloat(r.birds_end) || 0), 0);
-        const totalMortality = latestRows.reduce((s, r) => s + (parseFloat(r.cumulative_mortality) || 0), 0);
+        const avgWeight = allKpis.length > 0
+          ? (allKpis.reduce((s, k) => s + (k.avg_weight_kg || 0), 0) / allKpis.length).toFixed(2)
+          : "0.00";
+        
+        const avgFcr = allKpis.length > 0
+          ? (allKpis.reduce((s, k) => s + (k.avg_fcr || 0), 0) / allKpis.length).toFixed(2)
+          : "0.00";
+        
+        const avgMortality = allKpis.length > 0
+          ? (allKpis.reduce((s, k) => s + (k.avg_mortality_rate || 0), 0) / allKpis.length).toFixed(2)
+          : "0.00";
 
         setFarmMetrics({
-          avgWeightGain: (
-            csvData.reduce((s, r) => s + (parseFloat(r.avg_weight_kg) || 0), 0)
-            / csvData.length
-          ).toFixed(2),
-          fcr: (
-            csvData.reduce((s, r) => s + (parseFloat(r.fcr) || 0), 0)
-            / csvData.length
-          ).toFixed(2),
-          mortalityRate: (
-            (totalMortality / (totalBirds + totalMortality)) * 100
-          ).toFixed(2),
+          avgWeightGain: avgWeight,
+          fcr: avgFcr,
+          mortalityRate: avgMortality,
           waterConsumption: 2.5,
           energyEfficiency: 92,
           sustainabilityScore: 8.5
@@ -108,14 +102,14 @@ export default function DashboardPage() {
         setLoading(false);
 
         // Fetch AI predictions for all rooms
-        if (roomIds.length > 0) {
+        if (roomsList.length > 0) {
           try {
             const aiPredictions = await getAllRoomsPredictions();
             setPredictions(aiPredictions);
             
             // Get feed recommendations for the first room as example
-            if (roomIds[0]) {
-              const feedRecs = await getFeedRecommendations(roomIds[0]);
+            if (roomsList[0]?.id) {
+              const feedRecs = await getFeedRecommendations(roomsList[0].id);
               setFeedRecommendations(feedRecs);
             }
 
@@ -134,6 +128,11 @@ export default function DashboardPage() {
             console.error('Failed to load AI predictions:', error);
           }
         }
+      } catch (err) {
+        console.error(err);
+        setMessage("Error fetching rooms. Please check backend connection.");
+        setLoading(false);
+      }
       } catch (err) {
         console.error(err);
         setMessage("Error fetching rooms. Please check backend connection.");
