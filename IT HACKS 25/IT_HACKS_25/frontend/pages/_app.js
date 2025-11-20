@@ -17,6 +17,17 @@ export default function App({ Component, pageProps }) {
     console.log(`Navigated to: ${router.pathname}`);
   }, [router.pathname]);
 
+  // Phase 9: Register service worker for PWA
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      import('@/lib/pwa/registerServiceWorker').then(({ registerServiceWorker }) => {
+        registerServiceWorker();
+      }).catch(err => {
+        console.error('[PWA] Failed to load service worker registration:', err);
+      });
+    }
+  }, []);
+
   // Pages that don't need Navbar/Layout
   const noLayoutPages = ['/login', '/register'];
   const isNoLayoutPage = noLayoutPages.includes(router.pathname);

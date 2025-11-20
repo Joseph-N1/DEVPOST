@@ -8,6 +8,8 @@ from database import get_db
 from services.csv_ingest import ingest_to_db, CSVIngestError
 from cache import invalidate_farm_cache
 from ml.train import train_new_model
+from auth.utils import get_current_active_user, require_role
+from models.auth import User, UserRole
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,10 +29,13 @@ async def upload_csv(
     file: UploadFile = File(...),
     farm_name: str = Query(default=None, description="Optional farm name"),
     clear_existing: bool = Query(default=False, description="Clear existing data before upload"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Upload CSV file and ingest into database.
+    
+    **RBAC Protected**: Requires admin or manager role.
     
     Process:
     1. Save CSV file to disk (for backup/reference)
@@ -42,6 +47,7 @@ async def upload_csv(
         file: CSV file upload
         farm_name: Optional farm name (auto-generated if not provided)
         db: Database session
+        current_user: Authenticated user (admin or manager)
         
     Returns:
         {
@@ -56,6 +62,13 @@ async def upload_csv(
             "training_result": dict
         }
     """
+    # RBAC: Only admin and manager can upload data
+    if not current_user.has_permission(UserRole.MANAGER):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Insufficient permissions. Required: manager or admin. Your role: {current_user.role.value}"
+        )
+    
     # Basic validation
     filename = Path(file.filename).name
     if not filename.lower().endswith(".csv"):

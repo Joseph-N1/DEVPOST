@@ -15,6 +15,8 @@ from models.farm import Farm, Room, MLModel, Prediction
 from ml.train import train_new_model
 from ml.predict import MLPredictor, predict_for_farm
 from ml.model_manager import ModelManager
+from auth.utils import get_current_active_user, require_role
+from models.auth import User, UserRole
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +30,23 @@ router = APIRouter(prefix="/ml", tags=["machine-learning"])
 @router.post('/train')
 async def train_model(
     model_type: str = Query(default='random_forest', description="Model type: random_forest, gradient_boosting"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Train a new ML model using available data.
     Auto-saves model and registers in database.
     
+    **RBAC Protected**: Requires admin role.
+    
     Returns training metrics and model version.
     """
+    # RBAC: Only admins can train models
+    if not current_user.has_permission(UserRole.ADMIN):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Insufficient permissions. Model training requires admin role. Your role: {current_user.role.value}"
+        )
     try:
         logger.info(f"Starting model training: {model_type}")
         
@@ -166,10 +177,22 @@ async def get_active_model_info(db: AsyncSession = Depends(get_db)):
 
 
 @router.post('/models/{model_id}/activate')
-async def activate_model(model_id: int, db: AsyncSession = Depends(get_db)):
+async def activate_model(
+    model_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
     """
     Activate a specific model version for predictions.
+    
+    **RBAC Protected**: Requires admin role.
     """
+    # RBAC: Only admins can activate models
+    if not current_user.has_permission(UserRole.ADMIN):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Insufficient permissions. Model activation requires admin role. Your role: {current_user.role.value}"
+        )
     try:
         # Get target model
         stmt = select(MLModel).where(MLModel.id == model_id)
@@ -217,10 +240,13 @@ async def predict_room(
     room_id: int,
     horizons: List[int] = Query(default=[7, 14, 30], description="Forecast horizons in days"),
     save_predictions: bool = Query(default=True, description="Save predictions to database"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Generate multi-horizon predictions for a specific room.
+    
+    **RBAC Protected**: Requires analyst role or higher.
     
     Returns:
     - 7-day, 14-day, and 30-day forecasts
@@ -228,6 +254,12 @@ async def predict_room(
     - Anomaly warnings
     - Feed recommendations
     """
+    # RBAC: Analysts, managers, and admins can access predictions
+    if not current_user.has_permission(UserRole.ANALYST):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Insufficient permissions. Predictions require analyst role or higher. Your role: {current_user.role.value}"
+        )
     try:
         # Get room from database
         room_stmt = select(Room).where(Room.id == room_id)
@@ -323,11 +355,20 @@ async def predict_room(
 async def predict_farm(
     farm_id: int,
     horizons: List[int] = Query(default=[7, 14, 30]),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Generate predictions for all rooms in a farm.
+    
+    **RBAC Protected**: Requires analyst role or higher.
     """
+    # RBAC: Analysts, managers, and admins can access predictions
+    if not current_user.has_permission(UserRole.ANALYST):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Insufficient permissions. Predictions require analyst role or higher. Your role: {current_user.role.value}"
+        )
     try:
         # Get farm
         farm_stmt = select(Farm).where(Farm.id == farm_id)

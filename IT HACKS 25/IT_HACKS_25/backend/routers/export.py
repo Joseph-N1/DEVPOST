@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import FileResponse, StreamingResponse
 from pathlib import Path
 import pandas as pd
@@ -6,6 +6,8 @@ import json
 from io import BytesIO
 from typing import Optional, List
 import logging
+from auth.utils import get_current_active_user, require_role
+from models.auth import User, UserRole
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix='/export', tags=['Export'])
@@ -18,12 +20,21 @@ async def export_analytics(
     rooms: Optional[str] = Query(None, description="Comma-separated list of room IDs"),
     metrics: Optional[str] = Query(None, description="Comma-separated list of metrics"),
     start_date: Optional[str] = None,
-    end_date: Optional[str] = None
+    end_date: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Export analytics data in various formats
     Supports CSV, JSON, and PDF with charts
+    
+    **RBAC Protected**: Requires manager role or higher.
     """
+    # RBAC: Managers and admins can export data
+    if not current_user.has_permission(UserRole.MANAGER):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Insufficient permissions. Data export requires manager role or higher. Your role: {current_user.role.value}"
+        )
     try:
         # Find latest CSV file
         csv_files = list(DATA_DIR.glob('*.csv'))
@@ -118,11 +129,20 @@ async def export_analytics(
 
 @router.get('/summary')
 async def export_summary(
-    room_id: Optional[str] = None
+    room_id: Optional[str] = None,
+    current_user: User = Depends(get_current_active_user)
 ):
     """
     Export executive summary with key metrics and insights
+    
+    **RBAC Protected**: Requires manager role or higher.
     """
+    # RBAC: Managers and admins can export summaries
+    if not current_user.has_permission(UserRole.MANAGER):
+        raise HTTPException(
+            status_code=403,
+            detail=f"Insufficient permissions. Summary export requires manager role or higher. Your role: {current_user.role.value}"
+        )
     try:
         csv_files = list(DATA_DIR.glob('*.csv'))
         if not csv_files:
