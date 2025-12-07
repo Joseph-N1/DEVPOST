@@ -196,16 +196,22 @@ export default function DashboardPage() {
           {/* METRIC CARDS */}
           <SectionTitle title="Farm Metrics" subtitle="Daily health and performance insights" />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { title: "Average Weight Gain", value: `${farmMetrics.avgWeightGain} kg`, icon: "🐔", metricKey: "avg_weight_kg" },
-              { title: "Feed Conversion Ratio", value: farmMetrics.fcr, icon: "🌾", metricKey: "fcr" },
-              { title: "Mortality Rate", value: `${farmMetrics.mortalityRate}%`, icon: "💚", metricKey: "mortality_rate" },
-              { title: "Water Consumption", value: `2.5L`, icon: "💧", metricKey: "water_liters_total" },
-              { title: "Energy Efficiency", value: `92%`, icon: "⚡" },
-              { title: "Sustainability Score", value: `8.5`, icon: "🌿" },
-            ].map(m => <MetricCard key={m.title} {...m} />)}
-          </div>
+          {farmMetrics ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                { title: "Average Weight Gain", value: `${farmMetrics.avgWeightGain || 0} kg`, icon: "🐔", metricKey: "avg_weight_kg" },
+                { title: "Feed Conversion Ratio", value: farmMetrics.fcr || "N/A", icon: "🌾", metricKey: "fcr" },
+                { title: "Mortality Rate", value: `${farmMetrics.mortalityRate || 0}%`, icon: "💚", metricKey: "mortality_rate" },
+                { title: "Water Consumption", value: `${farmMetrics.waterConsumption || 0}L`, icon: "💧", metricKey: "water_liters_total" },
+                { title: "Energy Efficiency", value: `${farmMetrics.energyEfficiency || 0}%`, icon: "⚡" },
+                { title: "Sustainability Score", value: `${farmMetrics.sustainabilityScore || 0}`, icon: "🌿" },
+              ].map(m => <MetricCard key={m.title} {...m} />)}
+            </div>
+          ) : (
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded mb-6">
+              <p className="text-blue-700">📊 <strong>No farm data available yet.</strong> Upload CSV data or create rooms to see metrics.</p>
+            </div>
+          )}
 
           {/* AI INTELLIGENCE INSIGHTS */}
           {aiAnalysis && (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import Navbar from '@/components/layout/Navbar';
+import Navbar from '@/components/ui/Navbar';
 import apiClient from '@/lib/apiClient';
 
 export default function AuditPage() {

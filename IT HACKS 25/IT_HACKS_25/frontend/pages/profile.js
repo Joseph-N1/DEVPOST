@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import Navbar from '@/components/layout/Navbar';
+import Navbar from '@/components/ui/Navbar';
 
 export default function ProfilePage() {
   const { user, updateProfile, logout } = useAuth();

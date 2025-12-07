@@ -31,7 +31,7 @@ sync_engine = create_engine(
 async_engine = create_async_engine(
     ASYNC_DATABASE_URL,
     echo=False,
-    pool_pre_ping=True,
+    pool_pre_ping=False,  # Disabled - was causing sync issues in async pool
     pool_size=10,
     max_overflow=20
 )

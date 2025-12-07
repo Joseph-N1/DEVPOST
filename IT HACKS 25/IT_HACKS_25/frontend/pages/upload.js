@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import apiClient from "@/lib/apiClient";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import DashboardHeader from "@/components/ui/DashboardHeader";
 import DashboardSection from "@/components/ui/DashboardSection";
@@ -19,8 +20,6 @@ export default function Upload() {
   const [error, setError] = useState(null);
   const [clearExisting, setClearExisting] = useState(false);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
   useEffect(() => {
     fetchFiles();
   }, []);
@@ -28,7 +27,7 @@ export default function Upload() {
   const fetchFiles = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${apiBaseUrl}/upload/files`);
+      const res = await apiClient.get(`/upload/files`);
       setFiles(res.data);
       setError(null);
     } catch (err) {
@@ -52,11 +51,10 @@ export default function Upload() {
     form.append("file", file);
 
     try {
-      const url = `${apiBaseUrl}/upload/csv?clear_existing=${clearExisting}`;
-      const response = await axios.post(url, form, {
+      const response = await apiClient.post(`/upload/csv?clear_existing=${clearExisting}`, form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setMessage(`✅ Upload successful! File saved as: ${response.data.filename}`);
+      setMessage(`✅ Upload successful! Imported ${response.data.metrics_inserted} metrics into ${response.data.farm_name}`);
       setFile(null);
       await fetchFiles();
     } catch (err) {
@@ -72,8 +70,8 @@ export default function Upload() {
     setPreviewLoading(true);
     setError(null);
     try {
-      const res = await axios.get(
-        `${apiBaseUrl}/upload/preview/${encodeURIComponent(file.path)}`
+      const res = await apiClient.get(
+        `/upload/preview/${encodeURIComponent(file.path)}`
       );
       setPreviewData(res.data);
     } catch (err) {

@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Create enum type for user roles (skip if already exists)
-    user_role_enum = postgresql.ENUM('admin', 'manager', 'viewer', name='userrole', create_type=False)
+    # Create enum type for user roles (create if doesn't exist)
+    user_role_enum = postgresql.ENUM('admin', 'manager', 'viewer', name='userrole', create_type=True)
     
     # Create users table
     op.create_table(

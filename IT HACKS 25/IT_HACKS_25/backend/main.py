@@ -2,8 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
+import os
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from fastapi.responses import JSONResponse
 
 logger = logging.getLogger("uvicorn.error")
+
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
 
 # Lifespan context manager for startup/shutdown events
 @asynccontextmanager
@@ -30,20 +38,37 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"⚠️ Cache shutdown error: {e}")
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, title="ECO FARM API", version="2.0.0")
+app.state.limiter = limiter
 
-# Enable CORS (allow all origins for local development)
+# Configure CORS with restricted origins (SECURITY FIX)
+CORS_ORIGINS = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000"
+).split(",")
+
+logger.info(f"CORS Origins configured: {CORS_ORIGINS}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[origin.strip() for origin in CORS_ORIGINS],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
 )
 
+# Rate limiting error handler
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request, exc):
+    return JSONResponse(
+        status_code=429,
+        content={"detail": "Rate limit exceeded", "error": "too_many_requests"}
+    )
+
 @app.get("/")
-async def root():
-    return {"message": "ECO FARM Backend v2.0 - Database Powered", "status": "operational"}
+@limiter.limit("200/minute")
+async def root(request):
+    return {"message": "ECO FARM Backend v2.0 - Database Powered", "status": "operational", "security": "hardened"}
 
 # Include routers with logging and error visibility
 try:

@@ -1,88 +1,126 @@
-﻿# Virtual environments
+﻿# ───────────────────────────────
+# Virtual Environments
+# ───────────────────────────────
 .venv/
 venv/
 env/
 
-# Node / Next
+# ───────────────────────────────
+# Node / Next.js
+# ───────────────────────────────
 node_modules/
 .next/
 dist/
 build/
+out/
 npm-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
+.turbo/
+.vercel/
 
-# Environment
+# ───────────────────────────────
+# Environment Files
+# ───────────────────────────────
 .env
+.env.*
+*.env
 .env.local
-.env.*.local
 
-# Backend generated data & models
-/backend/data/uploads/
-/backend/models/*.joblib
-/backend/models/rf_model.joblib
-/backend/models/model_metrics.joblib
-/backend/models/accuracy_history.csv
+# ───────────────────────────────
+# Backend — Data (generated, uploads, farm data)
+# ───────────────────────────────
+backend/data/uploads/
+backend/data/generated/
+backend/data/tmp/
+backend/data/*.csv
+backend/data/*.json
 
-# Machine Learning model versions
-/backend/ml/models/v*/
-/backend/ml/models/latest/
+# DO NOT TRACK POSTGRES DATA
+data/postgres/
+backend/data/postgres/
 
-# Python
+# OLD SAMPLE/TEST DATA
+backend/data/farm_sample*.*
+backend/data/sample*
+
+# ───────────────────────────────
+# Backend — Machine Learning
+# ───────────────────────────────
+backend/ml/models/
+backend/ml/models/**/*
+backend/models/*.joblib
+backend/models/*.pkl
+backend/models/**/*.joblib
+backend/models/**/*.pkl
+backend/models/model_metrics.joblib
+backend/models/accuracy_history.csv
+
+# ───────────────────────────────
+# Python Cache
+# ───────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 *.egg-info/
 .pytest_cache/
-*.py[cod]
 *$py.class
 
-# IDE
+# ───────────────────────────────
+# Docker
+# ───────────────────────────────
+docker-compose.override.yml
+docker-data/
+docker-volume/
+pgdata/
+redisdata/
+
+# ───────────────────────────────
+# Frontend Build
+# ───────────────────────────────
+frontend/.next/
+frontend/node_modules/
+
+# ───────────────────────────────
+# IDE Files
+# ───────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS / misc
+# ───────────────────────────────
+# OS Files
+# ───────────────────────────────
 .DS_Store
-*.log
 Thumbs.db
 
-# Docker
-docker-compose.override.yml
-
-# Backup files
+# ───────────────────────────────
+# Temporary & Backup Files
+# ───────────────────────────────
+*.tmp
+*.temp
 *backup*
 *.backup
 *.bak
-package-lock-backup.json
 
-# PostgreSQL data directory
-/data/postgres/
-
-# Test files
+# ───────────────────────────────
+# Test Files
+# ───────────────────────────────
 test_upload.py
 test_upload_complete.py
+backend/tests/
+frontend/tests/
 
-# Project structure files
+# ───────────────────────────────
+# Project Structure Files
+# ───────────────────────────────
 project_tree.txt
 project_structure.txt
 
-# Alembic cache
-/backend/migrations/__pycache__/
-/backend/migrations/versions/__pycache__/
-
-# Frontend build
-.vercel/
-.turbo/
-
-# Cache
-.cache/
-*.cache
-
-# Temporary
-*.tmp
-*.temp
+# ───────────────────────────────
+# Alembic Cache
+# ───────────────────────────────
+backend/migrations/__pycache__/
+backend/migrations/versions/__pycache__/

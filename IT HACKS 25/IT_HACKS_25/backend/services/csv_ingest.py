@@ -75,7 +75,7 @@ def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         DataFrame with normalized column names
     """
-    # Column mapping dictionary
+    # Column mapping dictionary - handles Phase 10 generated CSVs and legacy formats
     column_map = {
         'date': 'date',
         'eggs': 'eggs_produced',
@@ -91,22 +91,22 @@ def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
         'feed consumed': 'feed_consumed_kg',
         'feed_consumed': 'feed_consumed_kg',
         'feed_consumed_kg': 'feed_consumed_kg',
+        'feed_kg_total': 'feed_consumed_kg',
         
         'water': 'water_consumed_l',
         'water consumed': 'water_consumed_l',
         'water_consumed': 'water_consumed_l',
         'water_consumed_l': 'water_consumed_l',
+        'water_liters_total': 'water_consumed_l',
         
         'fcr': 'fcr',
         'feed conversion ratio': 'fcr',
+        'feed_conversion_ratio': 'fcr',
         
         'mortality': 'mortality_rate',
         'mortality rate': 'mortality_rate',
         'mortality_rate': 'mortality_rate',
-        
-        'production': 'production_rate',
-        'production rate': 'production_rate',
-        'production_rate': 'production_rate',
+        'mortality_daily': 'mortality_rate',
         
         'temperature': 'temperature_c',
         'temp': 'temperature_c',
@@ -114,21 +114,26 @@ def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
         
         'humidity': 'humidity_pct',
         'humidity_pct': 'humidity_pct',
-        
-        'ammonia': 'ammonia_ppm',
-        'ammonia_ppm': 'ammonia_ppm',
+        'humidity percentage': 'humidity_pct',
         
         'revenue': 'revenue',
+        'egg_revenue_usd': 'revenue',
+        
         'cost': 'cost',
+        'total_costs_usd': 'cost',
+        
         'profit': 'profit',
+        'profit_usd': 'profit',
         
         'birds': 'birds_remaining',
         'birds remaining': 'birds_remaining',
         'birds_remaining': 'birds_remaining',
+        'birds_end': 'birds_remaining',
         
         'flock age': 'flock_age_days',
         'flock_age': 'flock_age_days',
         'flock_age_days': 'flock_age_days',
+        'age_days': 'flock_age_days',
         
         'room': 'room_id',
         'room_id': 'room_id'
@@ -174,7 +179,8 @@ def validate_data(df: pd.DataFrame) -> Tuple[bool, List[str]]:
     
     # Check for at least one metric
     metric_columns = ['eggs_produced', 'avg_weight_kg', 'feed_consumed_kg', 
-                      'water_consumed_l', 'fcr', 'mortality_rate']
+                      'water_consumed_l', 'fcr', 'mortality_rate',
+                      'temperature_c', 'humidity_pct', 'revenue', 'cost', 'profit']
     has_metric = any(col in df.columns for col in metric_columns)
     
     if not has_metric:
@@ -314,7 +320,8 @@ async def ingest_to_db(
                 # Calculate initial bird count if available
                 room_df = farm_df[farm_df['room_id'] == room_id]
                 birds_start = room_df['birds_start'].iloc[0] if 'birds_start' in room_df.columns else None
-                if pd.isna(birds_start) and 'birds_remaining' in room_df.columns:
+                # Handle case where birds_start is NaN - try birds_remaining instead
+                if (birds_start is None or pd.isna(birds_start)) and 'birds_remaining' in room_df.columns:
                     birds_start = room_df['birds_remaining'].iloc[0]
                 
                 room = Room(
@@ -330,12 +337,50 @@ async def ingest_to_db(
     
     # Step 8: Batch insert metrics
     metrics_inserted = 0
+    
+    # Helper function to safely get values from row
+    def get_metric_value(row, col, type_func=None):
+        """Safely extract value from pandas Series row"""
+        if col not in row.index:
+            return None
+        val = row[col]
+        # Handle case where val might be a Series (MultiIndex) - take first element
+        if isinstance(val, pd.Series):
+            if len(val) == 0:
+                return None
+            val = val.iloc[0]
+        # Check for NaN/null values
+        try:
+            if pd.isna(val):
+                return None
+        except (TypeError, ValueError):
+            # If isna() fails, treat as None
+            return None
+        try:
+            if type_func:
+                return type_func(val)
+            return val
+        except (ValueError, TypeError):
+            return None
+    
     for (csv_farm_id, room_id), room_db_id in room_map.items():
         room_df = df[(df['farm_id'] == csv_farm_id) & (df['room_id'] == room_id)].copy()
         
         for _, row in room_df.iterrows():
             # Check if metric already exists (avoid duplicates)
-            metric_date = row['date'].date()
+            try:
+                # Convert date to datetime if it's a string
+                date_val = row['date']
+                if pd.isna(date_val):
+                    logger.warning(f"Skipping row with missing date")
+                    continue
+                # Ensure we have a Timestamp object
+                ts = pd.Timestamp(date_val) if not isinstance(date_val, pd.Timestamp) else date_val
+                metric_date = ts.date()
+            except Exception as e:
+                logger.warning(f"Skipping row with invalid date {date_val}: {str(e)}")
+                continue
+            
             result = await db.execute(
                 select(Metric).filter(
                     Metric.room_id == room_db_id,
@@ -348,25 +393,23 @@ async def ingest_to_db(
                 logger.debug(f"Skipping duplicate metric: room={room_id}, date={metric_date}")
                 continue
             
-            # Create metric record
+            # Create metric record with safe value extraction
             metric = Metric(
                 room_id=room_db_id,
                 date=metric_date,
-                eggs_produced=int(row['eggs_produced']) if 'eggs_produced' in row and pd.notna(row['eggs_produced']) else None,
-                avg_weight_kg=float(row['avg_weight_kg']) if 'avg_weight_kg' in row and pd.notna(row['avg_weight_kg']) else None,
-                feed_consumed_kg=float(row['feed_consumed_kg']) if 'feed_consumed_kg' in row and pd.notna(row['feed_consumed_kg']) else None,
-                water_consumed_l=float(row['water_consumed_l']) if 'water_consumed_l' in row and pd.notna(row['water_consumed_l']) else None,
-                fcr=float(row['fcr']) if 'fcr' in row and pd.notna(row['fcr']) else None,
-                mortality_rate=float(row['mortality_rate']) if 'mortality_rate' in row and pd.notna(row['mortality_rate']) else None,
-                production_rate=float(row['production_rate']) if 'production_rate' in row and pd.notna(row['production_rate']) else None,
-                temperature_c=float(row['temperature_c']) if 'temperature_c' in row and pd.notna(row['temperature_c']) else None,
-                humidity_pct=float(row['humidity_pct']) if 'humidity_pct' in row and pd.notna(row['humidity_pct']) else None,
-                ammonia_ppm=float(row['ammonia_ppm']) if 'ammonia_ppm' in row and pd.notna(row['ammonia_ppm']) else None,
-                revenue=float(row['revenue']) if 'revenue' in row and pd.notna(row['revenue']) else None,
-                cost=float(row['cost']) if 'cost' in row and pd.notna(row['cost']) else None,
-                profit=float(row['profit']) if 'profit' in row and pd.notna(row['profit']) else None,
-                birds_remaining=int(row['birds_remaining']) if 'birds_remaining' in row and pd.notna(row['birds_remaining']) else None,
-                flock_age_days=int(row['flock_age_days']) if 'flock_age_days' in row and pd.notna(row['flock_age_days']) else None
+                eggs_produced=get_metric_value(row, 'eggs_produced', int),
+                avg_weight_kg=get_metric_value(row, 'avg_weight_kg', float),
+                feed_consumed_kg=get_metric_value(row, 'feed_consumed_kg', float),
+                water_consumed_l=get_metric_value(row, 'water_consumed_l', float),
+                fcr=get_metric_value(row, 'fcr', float),
+                mortality_rate=get_metric_value(row, 'mortality_rate', float),
+                temperature_c=get_metric_value(row, 'temperature_c', float),
+                humidity_pct=get_metric_value(row, 'humidity_pct', float),
+                revenue=get_metric_value(row, 'revenue', float),
+                cost=get_metric_value(row, 'cost', float),
+                profit=get_metric_value(row, 'profit', float),
+                birds_remaining=get_metric_value(row, 'birds_remaining', int),
+                flock_age_days=get_metric_value(row, 'flock_age_days', int)
             )
             db.add(metric)
             metrics_inserted += 1

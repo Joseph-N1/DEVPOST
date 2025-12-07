@@ -217,7 +217,7 @@ async def get_current_active_user(
 
 
 # Role-Based Access Control (RBAC) Decorators
-def require_role(required_role: UserRole):
+def require_role(*allowed_roles):
     """
     Decorator factory for role-based access control.
     
@@ -226,9 +226,15 @@ def require_role(required_role: UserRole):
         @require_role(UserRole.ADMIN)
         async def admin_endpoint(user: User = Depends(get_current_active_user)):
             return {"message": "Admin access granted"}
+        
+        # Multiple roles allowed:
+        @router.post("/upload")
+        @require_role(UserRole.ADMIN, UserRole.MANAGER)
+        async def upload_endpoint(user: User = Depends(get_current_active_user)):
+            return {"message": "Admin or Manager access granted"}
     
     Args:
-        required_role: Minimum required role (admin > manager > viewer)
+        *allowed_roles: One or more UserRole values that are allowed
         
     Returns:
         Decorator function
@@ -242,9 +248,11 @@ def require_role(required_role: UserRole):
             if user is None:
                 raise AuthorizationError("User not found in request context")
             
-            if not user.has_permission(required_role):
+            # Check if user role is in allowed roles
+            if user.role not in allowed_roles:
+                roles_str = ", ".join([role.value for role in allowed_roles])
                 raise AuthorizationError(
-                    f"Access denied. Required role: {required_role.value}, "
+                    f"Access denied. Required role(s): {roles_str}, "
                     f"your role: {user.role.value}"
                 )
             

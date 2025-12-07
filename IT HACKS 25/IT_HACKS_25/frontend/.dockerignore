@@ -1,8 +1,41 @@
-node_modules
-.next
-.git
+# Node modules
+node_modules/
+
+# Next.js build artifacts
+.next/
+out/
+dist/
+build/
+
+# Git
+.git/
+.gitignore
+
+# Environments
 .env
-tests
+*.env
+.env.local
+
+# Logs
 npm-debug.log
 yarn-error.log
+*.log
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.temp
+
+# Tests
+tests/
+
+# Storybook (if present)
+.storybook/
+
+# Cache
+.turbo/
+.vercel/
+.cache/

@@ -1,6 +1,27 @@
 """
-Database models package.
+Database models package - All ORM models for SQLAlchemy.
+Exports: Farm, Room, Metric, MLModel, Prediction (farm.py)
+         User, UserRole, Session, AuditLog (auth.py)
 """
-from .farm import Farm, Room, Metric, Base
 
-__all__ = ["Farm", "Room", "Metric", "Base"]
+# Import Base from farm module
+from .farm import Base, Farm, Room, Metric, MLModel, Prediction
+
+# Import auth models
+from .auth import User, UserRole, Session, AuditLog
+
+__all__ = [
+    # Base
+    "Base",
+    # Farm models
+    "Farm",
+    "Room",
+    "Metric",
+    "MLModel",
+    "Prediction",
+    # Auth models
+    "User",
+    "UserRole",
+    "Session",
+    "AuditLog",
+]

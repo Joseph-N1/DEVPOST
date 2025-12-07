@@ -28,6 +28,12 @@ lightgbm==4.1.0
 
 # Phase 8: Authentication & Authorization
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+python-jose[cryptography]==3.3.0
+email-validator==2.1.0
+
+# Phase 10: Security Hardening & Rate Limiting
+slowapi==0.1.9
 bcrypt==4.0.1  # Pin bcrypt to 4.0.1 for passlib compatibility
 python-jose[cryptography]==3.3.0
 python-multipart==0.0.6

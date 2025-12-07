@@ -1,9 +1,55 @@
-__pycache__
+# Python cache
+__pycache__/
 *.pyc
-.git
-tests
-backend/data
-backend/models/*.joblib
+*.pyo
+*.pyd
+
+# Git folder (prevents docker copying the repo)
+.git/
+.gitignore
+
+# Tests (not needed in build)
+tests/
+backend/tests/
+
+# Environment files
 .env
+*.env
+
+# Logs
 *.log
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Backend temporary + generated data
+backend/data/uploads/
+backend/data/generated/
+backend/data/tmp/
+backend/data/*.csv
+backend/data/*.json
+
+# ML model binaries (must not go into Docker image)
+backend/ml/models/
+backend/models/*.joblib
+backend/models/*.pkl
+backend/models/**/*.joblib
+
+# Local postgres data (NEVER include in image)
+data/postgres/
+backend/data/postgres/
+
+# Venv
+.venv/
+venv/
+env/
+
+# Ignore docker volume mounts
+docker-data/
+docker-volume/
+pgdata/
+redisdata/
+
+# Node modules if backend serves static assets
+node_modules/

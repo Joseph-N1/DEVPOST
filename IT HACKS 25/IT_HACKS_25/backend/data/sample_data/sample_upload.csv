@@ -1,7 +1,0 @@
-farm_id,room_id,date,age_days,temperature_c,humidity_pct,ammonia_ppm,feed_consumed_kg,feed_type,vitamins,disinfectant_used,mortality_count,egg_count,avg_weight_kg,bird_count
-farm_1,room_1,2025-07-01,7,30.2,72,10,12.5,Feed A,Vit A,Yes,0,0,0.25,100
-farm_1,room_1,2025-07-02,8,30.5,73,11,13.0,Feed A,Vit A,Yes,0,0,0.28,100
-farm_1,room_1,2025-07-03,9,30.1,71,9,13.4,Feed A,Vit A,Yes,1,0,0.30,99
-farm_1,room_2,2025-07-01,7,29.8,70,8,11.8,Feed B,Vit B,Yes,0,0,0.24,95
-farm_1,room_2,2025-07-02,8,30.0,71,9,12.1,Feed B,Vit B,Yes,0,0,0.26,95
-farm_1,room_2,2025-07-03,9,30.3,72,10,12.7,Feed B,Vit B,Yes,0,0,0.29,95
