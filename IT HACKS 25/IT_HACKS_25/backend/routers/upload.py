@@ -64,7 +64,7 @@ def validate_file_upload(file: UploadFile) -> tuple[str, str]:
     return sanitize_filename(file.filename), file_ext
 
 @router.post("/csv")
-@require_role(UserRole.ADMIN, UserRole.MANAGER)
+@require_role(UserRole.admin, UserRole.manager)
 async def upload_csv(
     file: UploadFile = File(...),
     farm_name: str = Query(default=None, description="Optional farm name"),

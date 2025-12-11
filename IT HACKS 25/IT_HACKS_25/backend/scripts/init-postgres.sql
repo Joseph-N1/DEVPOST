@@ -40,3 +40,31 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO farm;
 \echo '========================================='
 \echo 'ECO FARM Database Initialization Complete'
 \echo '========================================='
+
+-- Create admin user (password hash for 'password')
+-- Hash generated with bcrypt rounds=12
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_tables WHERE tablename = 'users') THEN
+    RAISE NOTICE 'users table does not exist yet - admin will be created by Alembic migrations';
+  ELSE
+    IF NOT EXISTS (SELECT FROM users WHERE email = 'joseph123nimyel@gmail.com') THEN
+      INSERT INTO users (email, username, password_hash, full_name, role, is_active, created_at, updated_at)
+      VALUES (
+        'joseph123nimyel@gmail.com',
+        'admin',
+        '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.AQPCXKKd6Qa0Aq',
+        'Joseph Nimyel (Admin)',
+        'admin',
+        TRUE,
+        NOW(),
+        NOW()
+      );
+      RAISE NOTICE 'Admin user created successfully';
+    ELSE
+      RAISE NOTICE 'Admin user already exists';
+    END IF;
+  END IF;
+END $$;
+
+\echo 'Admin user setup complete'

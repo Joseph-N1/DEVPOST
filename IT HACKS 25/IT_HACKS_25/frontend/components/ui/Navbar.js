@@ -24,7 +24,9 @@ export default function Navbar() {
   // Role-based navigation links
   const navLinks = [
     { href: "/dashboard", label: t("dashboard"), roles: ['viewer', 'manager', 'admin'] },
-    { href: "/analytics", label: t("analytics_page"), roles: ['viewer', 'manager', 'admin'] },
+    { href: "/analytics", label: "📈 Analytics", roles: ['viewer', 'manager', 'admin'] },
+    { href: "/features", label: "🎯 Features", roles: ['viewer', 'manager', 'admin'] },
+    { href: "/monitor-dashboard", label: "📊 Monitor", roles: ['viewer', 'manager', 'admin'] },
     { href: "/reports", label: t("reports"), roles: ['manager', 'admin'] },
     { href: "/upload", label: "Upload", roles: ['manager', 'admin'] },
     { href: "/audit", label: "Audit Logs", roles: ['admin'] },

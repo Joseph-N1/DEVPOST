@@ -12,6 +12,7 @@ pydantic==2.1.1
 numpy==1.25.2
 scipy==1.11.2
 requests==2.31.0
+psutil==5.9.5
 
 # Database
 psycopg2-binary==2.9.9

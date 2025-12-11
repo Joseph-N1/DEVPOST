@@ -42,7 +42,7 @@ async def train_model(
     Returns training metrics and model version.
     """
     # RBAC: Only admins can train models
-    if not current_user.has_permission(UserRole.ADMIN):
+    if not current_user.has_permission(UserRole.admin):
         raise HTTPException(
             status_code=403,
             detail=f"Insufficient permissions. Model training requires admin role. Your role: {current_user.role.value}"
@@ -188,7 +188,7 @@ async def activate_model(
     **RBAC Protected**: Requires admin role.
     """
     # RBAC: Only admins can activate models
-    if not current_user.has_permission(UserRole.ADMIN):
+    if not current_user.has_permission(UserRole.admin):
         raise HTTPException(
             status_code=403,
             detail=f"Insufficient permissions. Model activation requires admin role. Your role: {current_user.role.value}"

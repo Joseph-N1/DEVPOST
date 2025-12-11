@@ -30,7 +30,7 @@ async def export_analytics(
     **RBAC Protected**: Requires manager role or higher.
     """
     # RBAC: Managers and admins can export data
-    if not current_user.has_permission(UserRole.MANAGER):
+    if not current_user.has_permission(UserRole.manager):
         raise HTTPException(
             status_code=403,
             detail=f"Insufficient permissions. Data export requires manager role or higher. Your role: {current_user.role.value}"
@@ -138,7 +138,7 @@ async def export_summary(
     **RBAC Protected**: Requires manager role or higher.
     """
     # RBAC: Managers and admins can export summaries
-    if not current_user.has_permission(UserRole.MANAGER):
+    if not current_user.has_permission(UserRole.manager):
         raise HTTPException(
             status_code=403,
             detail=f"Insufficient permissions. Summary export requires manager role or higher. Your role: {current_user.role.value}"

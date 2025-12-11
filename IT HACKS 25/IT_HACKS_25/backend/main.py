@@ -41,6 +41,15 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan, title="ECO FARM API", version="2.0.0")
 app.state.limiter = limiter
 
+# Initialize ML Explainability Analyzer
+try:
+    from ml.explainability import ExplainabilityAnalyzer
+    app.state.explainability = ExplainabilityAnalyzer()
+    logger.info("✅ ExplainabilityAnalyzer initialized")
+except Exception as e:
+    logger.warning(f"⚠️ ExplainabilityAnalyzer initialization failed: {e}")
+    app.state.explainability = None
+
 # Configure CORS with restricted origins (SECURITY FIX)
 CORS_ORIGINS = os.getenv(
     "CORS_ORIGINS",
@@ -72,7 +81,7 @@ async def root(request):
 
 # Include routers with logging and error visibility
 try:
-    from routers import upload, analysis, ai_intelligence, export, health, ml_predictions, auth, audit
+    from routers import upload, analysis, ai_intelligence, export, health, ml_predictions, auth, audit, ai_inference, monitoring, analytics
     app.include_router(health.router)
     logger.info("Health router included at /health")
     app.include_router(auth.router)
@@ -85,6 +94,12 @@ try:
     logger.info("Analysis router included at /analysis")
     app.include_router(ai_intelligence.router)
     logger.info("AI Intelligence router included at /ai")
+    app.include_router(ai_inference.router)
+    logger.info("AI Inference router included at /ai")
+    app.include_router(monitoring.router)
+    logger.info("Monitoring router included at /monitor")
+    app.include_router(analytics.router)
+    logger.info("Analytics router included at /analytics")
     app.include_router(export.router)
     logger.info("Export router included at /export")
     app.include_router(ml_predictions.router)

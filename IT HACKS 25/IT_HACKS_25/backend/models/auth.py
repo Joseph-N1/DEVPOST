@@ -18,9 +18,9 @@ class UserRole(str, enum.Enum):
     - manager: Farm management, reports, data upload
     - viewer: Read-only access to analytics
     """
-    ADMIN = "admin"
-    MANAGER = "manager"
-    VIEWER = "viewer"
+    admin = "admin"
+    manager = "manager"
+    viewer = "viewer"
 
 
 class User(Base):
@@ -41,7 +41,7 @@ class User(Base):
     phone = Column(String(50), nullable=True)
     
     # Role & Status
-    role = Column(SQLEnum(UserRole, values_callable=lambda x: [e.value for e in x]), nullable=False, default=UserRole.VIEWER, index=True)
+    role = Column(SQLEnum(UserRole, values_callable=lambda x: [e.value for e in x]), nullable=False, default=UserRole.viewer, index=True)
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     
@@ -101,9 +101,9 @@ class User(Base):
         Admin > Manager > Viewer
         """
         role_hierarchy = {
-            UserRole.ADMIN: 3,
-            UserRole.MANAGER: 2,
-            UserRole.VIEWER: 1
+            UserRole.admin: 3,
+            UserRole.manager: 2,
+            UserRole.viewer: 1
         }
         return role_hierarchy.get(self.role, 0) >= role_hierarchy.get(required_role, 0)
 

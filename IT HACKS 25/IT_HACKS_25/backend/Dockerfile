@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy requirements and build wheels
 COPY requirements_dev.txt ./requirements.txt
-RUN pip install --user --no-cache-dir \
+RUN pip install --upgrade pip && \
+    pip install --user --no-cache-dir \
     --default-timeout=300 --retries=5 \
     -r requirements.txt
 

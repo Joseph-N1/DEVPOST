@@ -12,6 +12,7 @@ shap==0.42.1
 numpy==1.25.2
 scipy==1.11.2
 requests==2.31.0
+psutil==5.9.5
 
 # Phase 6: Database & Caching Dependencies
 psycopg2-binary==2.9.9

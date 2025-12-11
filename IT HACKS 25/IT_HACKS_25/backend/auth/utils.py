@@ -223,13 +223,13 @@ def require_role(*allowed_roles):
     
     Usage:
         @router.get("/admin-only")
-        @require_role(UserRole.ADMIN)
+        @require_role(UserRole.admin)
         async def admin_endpoint(user: User = Depends(get_current_active_user)):
             return {"message": "Admin access granted"}
         
         # Multiple roles allowed:
         @router.post("/upload")
-        @require_role(UserRole.ADMIN, UserRole.MANAGER)
+        @require_role(UserRole.admin, UserRole.manager)
         async def upload_endpoint(user: User = Depends(get_current_active_user)):
             return {"message": "Admin or Manager access granted"}
     
@@ -264,12 +264,12 @@ def require_role(*allowed_roles):
 
 def require_admin(func):
     """Shortcut decorator for admin-only endpoints."""
-    return require_role(UserRole.ADMIN)(func)
+    return require_role(UserRole.admin)(func)
 
 
 def require_manager(func):
     """Shortcut decorator for manager+ endpoints."""
-    return require_role(UserRole.MANAGER)(func)
+    return require_role(UserRole.manager)(func)
 
 
 # Audit Logging Utility

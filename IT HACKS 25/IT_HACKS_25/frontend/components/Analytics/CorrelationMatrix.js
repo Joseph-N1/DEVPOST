@@ -1,0 +1,1 @@
+export { CorrelationMatrix } from './index';

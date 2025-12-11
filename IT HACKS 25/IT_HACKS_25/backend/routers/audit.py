@@ -42,7 +42,7 @@ async def get_audit_logs(
     - end_date: Filter logs before this date
     """
     # Only admins can view audit logs
-    if current_user.role != UserRole.ADMIN:
+    if current_user.role != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
@@ -102,7 +102,7 @@ async def get_audit_log_detail(
     """
     Get detailed audit log entry (admin only).
     """
-    if current_user.role != UserRole.ADMIN:
+    if current_user.role != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
@@ -150,7 +150,7 @@ async def get_audit_stats(
     """
     Get audit statistics (admin only).
     """
-    if current_user.role != UserRole.ADMIN:
+    if current_user.role != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin access required"
