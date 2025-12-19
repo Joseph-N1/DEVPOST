@@ -5,7 +5,195 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   Cell, ScatterChart, Scatter, ReferenceLine, ComposedChart
 } from 'recharts';
-import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, CheckCircle2, AlertTriangle, Info, Plus, X } from 'lucide-react';
+import useFeatureStore from '@/store/featureStore';
+import { useTheme } from '@/contexts/ThemeContext';
+
+/**
+ * FeatureSelectionPanel - Multi-select component for choosing 3-5 features to investigate
+ */
+export const FeatureSelectionPanel = ({ features, onSelectionChange }) => {
+  const { 
+    selectedFeatures, 
+    toggleFeature, 
+    clearSelectedFeatures,
+    minFeatures,
+    maxFeatures,
+    isSelectionValid 
+  } = useFeatureStore();
+  
+  const { currentTheme } = useTheme();
+  
+  const getSeasonalAccent = () => {
+    const accents = {
+      spring: 'border-pink-400 bg-pink-50 dark:bg-pink-900/20',
+      summer: 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20',
+      autumn: 'border-orange-400 bg-orange-50 dark:bg-orange-900/20',
+      winter: 'border-cyan-400 bg-cyan-50 dark:bg-cyan-900/20',
+      light: 'border-green-400 bg-green-50 dark:bg-green-900/20',
+      dark: 'border-purple-400 bg-purple-50 dark:bg-purple-900/20'
+    };
+    return accents[currentTheme] || accents.light;
+  };
+  
+  const isSelected = (featureName) => selectedFeatures.includes(featureName);
+  const canAddMore = selectedFeatures.length < maxFeatures;
+  const valid = selectedFeatures.length >= minFeatures;
+  
+  // Sort features by importance
+  const sortedFeatures = [...(features || [])].sort((a, b) => 
+    (b.importance_score || 0) - (a.importance_score || 0)
+  );
+
+  // Handle empty features state
+  if (!features || features.length === 0) {
+    return (
+      <div className={`rounded-xl border-2 ${getSeasonalAccent()} p-6 mb-6 transition-all duration-300`}>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2 mb-4">
+          🔍 Feature Investigation Panel
+        </h3>
+        <div className="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg text-center">
+          <div className="text-4xl mb-3">📊</div>
+          <p className="text-gray-600 dark:text-gray-400 mb-2 font-medium">No features available yet</p>
+          <p className="text-sm text-gray-500 dark:text-gray-500">
+            Feature importance data will appear once the ML models have processed enough data.
+            Make sure you have uploaded farm data and the system has had time to analyze it.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`rounded-xl border-2 ${getSeasonalAccent()} p-6 mb-6 transition-all duration-300`}>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            🔍 Feature Investigation Panel
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Select {minFeatures}-{maxFeatures} features to investigate importance changes
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className={`text-sm font-medium px-3 py-1 rounded-full ${
+            valid 
+              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+          }`}>
+            {selectedFeatures.length}/{maxFeatures} selected
+          </span>
+          {selectedFeatures.length > 0 && (
+            <button
+              onClick={clearSelectedFeatures}
+              className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 flex items-center gap-1"
+            >
+              <X className="w-4 h-4" /> Clear
+            </button>
+          )}
+        </div>
+      </div>
+      
+      {/* Selection status message */}
+      {!valid && (
+        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5 text-amber-500" />
+          <span className="text-sm text-amber-700 dark:text-amber-300">
+            Select at least {minFeatures} features to enable analysis and sync to monitor dashboard
+          </span>
+        </div>
+      )}
+      
+      {valid && (
+        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-green-500" />
+          <span className="text-sm text-green-700 dark:text-green-300">
+            Selection complete! These features are now being tracked on the Monitor Dashboard.
+          </span>
+        </div>
+      )}
+      
+      {/* Feature grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {sortedFeatures.slice(0, 15).map((feature, idx) => {
+          const selected = isSelected(feature.feature_name);
+          const disabled = !selected && !canAddMore;
+          
+          return (
+            <button
+              key={feature.feature_name}
+              onClick={() => !disabled && toggleFeature(feature.feature_name)}
+              disabled={disabled}
+              className={`p-4 rounded-lg border-2 transition-all duration-200 text-left ${
+                selected
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-500/50'
+                  : disabled
+                    ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 opacity-50 cursor-not-allowed'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-gray-400">#{idx + 1}</span>
+                    <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                      {feature.feature_name}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-sm text-blue-600 dark:text-blue-400 font-semibold">
+                      {((feature.importance_score || 0) * 100).toFixed(1)}%
+                    </span>
+                    {feature.trend === 'increasing' && (
+                      <TrendingUp className="w-4 h-4 text-green-500" />
+                    )}
+                    {feature.trend === 'decreasing' && (
+                      <TrendingDown className="w-4 h-4 text-red-500" />
+                    )}
+                    {feature.trend === 'stable' && (
+                      <Activity className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                </div>
+                {selected && (
+                  <CheckCircle2 className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      
+      {/* Selected features summary */}
+      {selectedFeatures.length > 0 && (
+        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            Selected for Investigation:
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {selectedFeatures.map(name => {
+              const feature = features?.find(f => f.feature_name === name);
+              return (
+                <span
+                  key={name}
+                  className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-sm"
+                >
+                  {name}
+                  <button
+                    onClick={() => toggleFeature(name)}
+                    className="hover:text-red-500 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 /**
  * TopFeaturesChart - Horizontal bar chart of top features by importance
@@ -191,9 +379,19 @@ export const FeatureComparison = ({ data, loading, error, label1, label2 }) => {
 };
 
 /**
- * SeasonalImportance - Show feature importance by season
+ * SeasonalImportance - Show feature importance by season with intervention planning
  */
 export const SeasonalImportance = ({ data, loading, error }) => {
+  const { 
+    seasonalInterventions, 
+    addSeasonalIntervention, 
+    removeSeasonalIntervention 
+  } = useFeatureStore();
+  const { currentTheme } = useTheme();
+  
+  const [showAddForm, setShowAddForm] = useState(null); // season name or null
+  const [newIntervention, setNewIntervention] = useState({ title: '', description: '', priority: 'medium' });
+  
   if (loading) {
     return (
       <div className="h-80 bg-gray-50 dark:bg-gray-800 rounded-lg p-6 flex items-center justify-center">
@@ -211,50 +409,198 @@ export const SeasonalImportance = ({ data, loading, error }) => {
   }
 
   const seasons = ['Spring', 'Summer', 'Fall', 'Winter'];
+  const seasonKeys = { Spring: 'spring', Summer: 'summer', Fall: 'autumn', Winter: 'winter' };
   const seasonColors = {
-    Spring: '#10b981',
-    Summer: '#fbbf24',
-    Fall: '#f97316',
-    Winter: '#3b82f6'
+    Spring: '#ec4899',
+    Summer: '#f59e0b',
+    Fall: '#ea580c',
+    Winter: '#06b6d4'
+  };
+  const seasonEmojis = {
+    Spring: '🌸',
+    Summer: '🌻',
+    Fall: '🍂',
+    Winter: '❄️'
+  };
+  
+  const handleAddIntervention = (season) => {
+    if (newIntervention.title.trim()) {
+      addSeasonalIntervention(seasonKeys[season], newIntervention);
+      setNewIntervention({ title: '', description: '', priority: 'medium' });
+      setShowAddForm(null);
+    }
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {seasons.map(season => (
-        <div key={season} className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <div 
-            className="h-1 rounded-full mb-3"
-            style={{ backgroundColor: seasonColors[season] }}
-          />
-          <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">{season}</h4>
+    <div className="space-y-6">
+      {/* Seasonal Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {seasons.map(season => {
+          const seasonKey = seasonKeys[season];
+          const interventions = seasonalInterventions[seasonKey] || [];
           
-          <div className="space-y-2">
-            {(data[season] || []).slice(0, 5).map((feature, idx) => (
-              <div key={idx} className="flex items-center justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400 truncate">{feature.feature_name}</span>
-                <div className="flex items-center gap-1">
-                  <div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
-                    <div
-                      className="h-full rounded"
-                      style={{
-                        width: `${(feature.importance_score || 0) * 100}%`,
-                        backgroundColor: seasonColors[season]
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 w-10 text-right">
-                    {((feature.importance_score || 0) * 100).toFixed(1)}%
-                  </span>
-                </div>
+          return (
+            <div 
+              key={season} 
+              className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg"
+            >
+              <div 
+                className="h-1.5 rounded-full mb-3"
+                style={{ backgroundColor: seasonColors[season] }}
+              />
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <span>{seasonEmojis[season]}</span>
+                  {season}
+                </h4>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {interventions.length} interventions
+                </span>
               </div>
-            ))}
-          </div>
+              
+              {/* Feature importance for season */}
+              <div className="space-y-2 mb-4">
+                {(data[season] || []).slice(0, 5).map((feature, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400 truncate">{feature.feature_name}</span>
+                    <div className="flex items-center gap-1">
+                      <div className="w-12 h-4 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                        <div
+                          className="h-full rounded"
+                          style={{
+                            width: `${(feature.importance_score || 0) * 100}%`,
+                            backgroundColor: seasonColors[season]
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 w-10 text-right">
+                        {((feature.importance_score || 0) * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-          {(!data[season] || data[season].length === 0) && (
-            <p className="text-xs text-gray-500 dark:text-gray-400">No data available</p>
-          )}
+              {(!data[season] || data[season].length === 0) && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">No data available</p>
+              )}
+              
+              {/* Planned Interventions */}
+              {interventions.length > 0 && (
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                  <h5 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase">
+                    Planned Interventions
+                  </h5>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {interventions.map(int => (
+                      <div 
+                        key={int.id}
+                        className={`p-2 rounded text-xs ${
+                          int.priority === 'high' 
+                            ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' 
+                            : int.priority === 'medium'
+                              ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
+                              : 'bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <span className="font-medium text-gray-700 dark:text-gray-300">{int.title}</span>
+                          <button
+                            onClick={() => removeSeasonalIntervention(seasonKey, int.id)}
+                            className="text-gray-400 hover:text-red-500"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {int.description && (
+                          <p className="text-gray-500 dark:text-gray-400 mt-1">{int.description}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Add Intervention Button */}
+              {showAddForm === season ? (
+                <div className="mt-3 space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Intervention title..."
+                    value={newIntervention.title}
+                    onChange={(e) => setNewIntervention({ ...newIntervention, title: e.target.value })}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  />
+                  <textarea
+                    placeholder="Description (optional)..."
+                    value={newIntervention.description}
+                    onChange={(e) => setNewIntervention({ ...newIntervention, description: e.target.value })}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    rows={2}
+                  />
+                  <select
+                    value={newIntervention.priority}
+                    onChange={(e) => setNewIntervention({ ...newIntervention, priority: e.target.value })}
+                    className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="low">Low Priority</option>
+                    <option value="medium">Medium Priority</option>
+                    <option value="high">High Priority</option>
+                  </select>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleAddIntervention(season)}
+                      className="flex-1 px-2 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded"
+                    >
+                      Add
+                    </button>
+                    <button
+                      onClick={() => { setShowAddForm(null); setNewIntervention({ title: '', description: '', priority: 'medium' }); }}
+                      className="px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowAddForm(season)}
+                  className="w-full mt-3 px-2 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-700 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center justify-center gap-1"
+                >
+                  <Plus className="w-3 h-3" />
+                  Plan Intervention
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Seasonal Intervention Guidelines */}
+      <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
+        <h4 className="font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+          <Info className="w-5 h-5 text-blue-500" />
+          Using Seasonal Data to Plan Interventions
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
+          <div>
+            <h5 className="font-semibold text-green-700 dark:text-green-400 mb-1">🌸 Spring Considerations</h5>
+            <p>Monitor temperature-related features as weather transitions. Focus on humidity control and ventilation adjustments.</p>
+          </div>
+          <div>
+            <h5 className="font-semibold text-yellow-700 dark:text-yellow-400 mb-1">🌻 Summer Considerations</h5>
+            <p>Heat stress indicators become critical. Watch feed intake patterns and water consumption closely.</p>
+          </div>
+          <div>
+            <h5 className="font-semibold text-orange-700 dark:text-orange-400 mb-1">🍂 Autumn Considerations</h5>
+            <p>Prepare for lighting changes affecting production. Review feed formulation for cooler temperatures.</p>
+          </div>
+          <div>
+            <h5 className="font-semibold text-cyan-700 dark:text-cyan-400 mb-1">❄️ Winter Considerations</h5>
+            <p>Energy efficiency features gain importance. Monitor heating costs vs. production output trade-offs.</p>
+          </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 };
@@ -367,10 +713,71 @@ export default function FeatureImportanceDashboard() {
   const [days, setDays] = useState(7);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [rooms, setRooms] = useState([]);
+  
+  // Feature store for syncing with monitor dashboard
+  const { 
+    setFeatureImportanceData, 
+    setSeasonalData: setStoreSeasonalData,
+    selectedFeatures,
+    addFeatureAlert,
+    featureAlerts
+  } = useFeatureStore();
 
   useEffect(() => {
+    fetchRooms();
     fetchFeatureImportance();
   }, [days, selectedRoom, selectedFeature]);
+
+  const fetchRooms = async () => {
+    try {
+      const response = await fetch('/api/rooms', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setRooms(data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch rooms:', err);
+    }
+  };
+  
+  // Sync data to store when topFeatures change
+  useEffect(() => {
+    if (topFeatures.length > 0) {
+      setFeatureImportanceData(topFeatures);
+    }
+  }, [topFeatures, setFeatureImportanceData]);
+  
+  // Sync seasonal data to store
+  useEffect(() => {
+    if (Object.keys(seasonalData).length > 0) {
+      setStoreSeasonalData(seasonalData);
+    }
+  }, [seasonalData, setStoreSeasonalData]);
+  
+  // Check for sudden importance changes and create alerts
+  useEffect(() => {
+    if (topFeatures.length > 0) {
+      topFeatures.forEach(feature => {
+        // Check for significant trend changes
+        if (feature.trend === 'increasing' && feature.importance_score > 0.15) {
+          const existingAlert = featureAlerts.find(
+            a => a.featureName === feature.feature_name && !a.acknowledged
+          );
+          if (!existingAlert) {
+            addFeatureAlert({
+              featureName: feature.feature_name,
+              type: 'importance_increase',
+              message: `${feature.feature_name} has increased significantly in importance (${(feature.importance_score * 100).toFixed(1)}%)`,
+              severity: 'medium'
+            });
+          }
+        }
+      });
+    }
+  }, [topFeatures]);
 
   const fetchFeatureImportance = async () => {
     setLoading(true);
@@ -422,6 +829,26 @@ export default function FeatureImportanceDashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Feature Selection Panel */}
+      <FeatureSelectionPanel features={topFeatures} />
+      
+      {/* Feature Alerts */}
+      {featureAlerts.filter(a => !a.acknowledged).length > 0 && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+          <h4 className="font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5" />
+            Feature Importance Alerts
+          </h4>
+          <div className="space-y-2">
+            {featureAlerts.filter(a => !a.acknowledged).slice(0, 3).map(alert => (
+              <div key={alert.id} className="text-sm text-amber-700 dark:text-amber-300">
+                • {alert.message}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
       {/* Controls */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -461,15 +888,20 @@ export default function FeatureImportanceDashboard() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Room Filter (Optional)
+              Room Filter
             </label>
-            <input
-              type="number"
+            <select
               value={selectedRoom || ''}
               onChange={(e) => setSelectedRoom(e.target.value ? parseInt(e.target.value) : null)}
-              placeholder="All rooms"
               className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100"
-            />
+            >
+              <option value="">All Rooms</option>
+              {rooms.map(room => (
+                <option key={room.id} value={room.id}>
+                  {room.name || `Room #${room.id}`}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
@@ -494,9 +926,11 @@ export default function FeatureImportanceDashboard() {
         )}
       </div>
 
-      {/* Seasonal Analysis */}
+      {/* Seasonal Analysis with Intervention Planning */}
       <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Seasonal Feature Importance</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Seasonal Feature Importance & Intervention Planning
+        </h3>
         <SeasonalImportance data={seasonalData} loading={loading} error={error} />
       </div>
 

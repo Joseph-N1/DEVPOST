@@ -5,6 +5,7 @@ import "../i18n"; // your existing i18n setup
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 // Dynamically import Navbar and Layout to disable SSR for i18n components
 const Layout = dynamic(() => import("@/components/ui/Layout"), { ssr: false });
@@ -33,17 +34,19 @@ export default function App({ Component, pageProps }) {
   const isNoLayoutPage = noLayoutPages.includes(router.pathname);
 
   return (
-    <AuthProvider>
-      {isNoLayoutPage ? (
-        <Component {...pageProps} />
-      ) : (
-        <Layout>
-          <Navbar />
-          <main className="min-h-screen bg-gray-50">
-            <Component {...pageProps} />
-          </main>
-        </Layout>
-      )}
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        {isNoLayoutPage ? (
+          <Component {...pageProps} />
+        ) : (
+          <Layout>
+            <Navbar />
+            <main className="min-h-screen transition-colors duration-300">
+              <Component {...pageProps} />
+            </main>
+          </Layout>
+        )}
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

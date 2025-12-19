@@ -172,13 +172,19 @@ async function staleWhileRevalidate(request, cacheName) {
   const cachedResponse = await caches.match(request);
   
   const fetchPromise = fetch(request)
-    .then((response) => {
-      const cache = caches.open(cacheName);
-      cache.then((c) => c.put(request, response.clone()));
+    .then(async (response) => {
+      // Clone the response before using it for cache
+      const responseToCache = response.clone();
+      const cache = await caches.open(cacheName);
+      await cache.put(request, responseToCache);
       return response;
     })
-    .catch(() => cachedResponse);
+    .catch((error) => {
+      console.warn('[ServiceWorker] Fetch failed, returning cached response:', error);
+      return cachedResponse;
+    });
 
+  // Return cached response immediately if available, otherwise wait for fetch
   return cachedResponse || fetchPromise;
 }
 

@@ -10,7 +10,9 @@ import Loading from '@/components/ui/Loading';
 import DateRangePicker from '@/components/ui/DateRangePicker';
 import RefreshButton from '@/components/ui/RefreshButton';
 import { useTranslation } from 'react-i18next';
-import { Download, Trophy, TrendingUp, TrendingDown, AlertTriangle, FileJson, FileSpreadsheet, ChevronDown, FileText } from 'lucide-react';
+import { Download, Trophy, TrendingUp, TrendingDown, AlertTriangle, FileJson, FileSpreadsheet, ChevronDown, FileText, Calendar, Leaf, Sun, CloudRain, Snowflake } from 'lucide-react';
+import useFeatureStore from '@/store/featureStore';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export default function ReportsPage() {
   const { t } = useTranslation();
@@ -705,7 +707,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Recommendations */}
-        <Card className="p-6">
+        <Card className="p-6 mb-10">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             💡 Recommendations & Insights
           </h2>
@@ -737,7 +739,234 @@ export default function ReportsPage() {
             ))}
           </div>
         </Card>
+        
+        {/* Seasonal Intervention Planning Report Section */}
+        <SeasonalInterventionReport />
       </PageContainer>
     </Layout>
+  );
+}
+
+/**
+ * SeasonalInterventionReport - Displays planned interventions and seasonal guidance
+ */
+function SeasonalInterventionReport() {
+  const { seasonalInterventions, selectedFeatures, featureImportanceData } = useFeatureStore();
+  const { currentTheme } = useTheme();
+  
+  const getCurrentSeason = () => {
+    const month = new Date().getMonth();
+    if (month >= 2 && month <= 4) return { key: 'spring', name: 'Spring', emoji: '🌸', icon: Leaf };
+    if (month >= 5 && month <= 7) return { key: 'summer', name: 'Summer', emoji: '🌻', icon: Sun };
+    if (month >= 8 && month <= 10) return { key: 'autumn', name: 'Autumn', emoji: '🍂', icon: CloudRain };
+    return { key: 'winter', name: 'Winter', emoji: '❄️', icon: Snowflake };
+  };
+  
+  const season = getCurrentSeason();
+  const currentInterventions = seasonalInterventions[season.key] || [];
+  const SeasonIcon = season.icon;
+  
+  const seasonalGuidance = {
+    spring: {
+      title: 'Spring Season Management',
+      focus: 'Transition & Growth',
+      recommendations: [
+        'Monitor temperature fluctuations as weather changes',
+        'Adjust ventilation settings for warmer days',
+        'Review lighting schedules for increasing daylight',
+        'Check feed formulation for growing birds',
+        'Prepare cooling systems for summer'
+      ],
+      featureNotes: 'Temperature and humidity features typically gain importance during spring transitions.'
+    },
+    summer: {
+      title: 'Summer Season Management', 
+      focus: 'Heat Stress Prevention',
+      recommendations: [
+        'Maximize ventilation and cooling capacity',
+        'Increase water availability and monitoring',
+        'Adjust feeding times to cooler parts of day',
+        'Monitor for heat stress indicators',
+        'Consider electrolyte supplementation'
+      ],
+      featureNotes: 'Water consumption and temperature features become critical indicators. Watch for FCR impacts from heat stress.'
+    },
+    autumn: {
+      title: 'Autumn Season Management',
+      focus: 'Preparation & Optimization',
+      recommendations: [
+        'Prepare heating systems for colder weather',
+        'Review lighting schedules for decreasing daylight',
+        'Optimize feed formulation for cooler temperatures',
+        'Check insulation and seal drafts',
+        'Plan for reduced natural ventilation needs'
+      ],
+      featureNotes: 'Feed efficiency features often improve as heat stress decreases. Monitor production patterns for seasonal shifts.'
+    },
+    winter: {
+      title: 'Winter Season Management',
+      focus: 'Energy & Efficiency',
+      recommendations: [
+        'Maintain optimal heating without overheating',
+        'Balance ventilation with heat conservation',
+        'Monitor ammonia levels with reduced airflow',
+        'Ensure adequate lighting hours for production',
+        'Watch for respiratory issues from poor air quality'
+      ],
+      featureNotes: 'Energy costs increase importance of feed efficiency. Mortality risk from respiratory issues should be monitored.'
+    }
+  };
+  
+  const guidance = seasonalGuidance[season.key];
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold flex items-center gap-2">
+          <Calendar className="text-blue-500" size={24} />
+          Seasonal Intervention Planning
+        </h2>
+        <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-green-100 rounded-lg">
+          <SeasonIcon size={20} className="text-blue-600" />
+          <span className="font-medium text-gray-700">
+            {season.emoji} Current: {season.name}
+          </span>
+        </div>
+      </div>
+      
+      {/* Current Season Guidance */}
+      <div className="bg-gradient-to-br from-blue-50 to-green-50 rounded-xl p-6 mb-6 border border-blue-200">
+        <h3 className="font-bold text-lg text-gray-800 mb-2">{guidance.title}</h3>
+        <p className="text-sm text-blue-700 font-medium mb-4">Focus Area: {guidance.focus}</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-semibold text-gray-700 mb-3">📋 Key Recommendations</h4>
+            <ul className="space-y-2">
+              {guidance.recommendations.map((rec, idx) => (
+                <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
+                  <span className="text-green-500 mt-0.5">✓</span>
+                  {rec}
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold text-gray-700 mb-3">📊 Feature Analysis Notes</h4>
+            <p className="text-sm text-gray-600 leading-relaxed">{guidance.featureNotes}</p>
+            
+            {selectedFeatures.length > 0 && (
+              <div className="mt-4">
+                <h5 className="text-sm font-medium text-gray-700 mb-2">Your Tracked Features:</h5>
+                <div className="flex flex-wrap gap-2">
+                  {selectedFeatures.map(name => (
+                    <span 
+                      key={name}
+                      className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium"
+                    >
+                      {name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Planned Interventions */}
+      <div className="mb-6">
+        <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          📅 Your Planned Interventions for {season.name}
+        </h3>
+        
+        {currentInterventions.length === 0 ? (
+          <div className="p-6 bg-gray-50 rounded-lg text-center border-2 border-dashed border-gray-300">
+            <p className="text-gray-500 mb-2">No interventions planned for {season.name}.</p>
+            <p className="text-sm text-gray-400">
+              Visit the Features page to add seasonal interventions based on feature analysis.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {currentInterventions.map(intervention => (
+              <div
+                key={intervention.id}
+                className={`p-4 rounded-lg border-l-4 ${
+                  intervention.priority === 'high'
+                    ? 'bg-red-50 border-red-500'
+                    : intervention.priority === 'medium'
+                      ? 'bg-amber-50 border-amber-500'
+                      : 'bg-gray-50 border-gray-400'
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <h4 className="font-semibold text-gray-800">{intervention.title}</h4>
+                  <span className={`text-xs px-2 py-1 rounded ${
+                    intervention.priority === 'high'
+                      ? 'bg-red-200 text-red-700'
+                      : intervention.priority === 'medium'
+                        ? 'bg-amber-200 text-amber-700'
+                        : 'bg-gray-200 text-gray-700'
+                  }`}>
+                    {intervention.priority}
+                  </span>
+                </div>
+                {intervention.description && (
+                  <p className="text-sm text-gray-600 mt-2">{intervention.description}</p>
+                )}
+                <p className="text-xs text-gray-400 mt-2">
+                  Created: {new Date(intervention.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* All Seasons Overview */}
+      <div>
+        <h3 className="font-semibold text-gray-800 mb-4">📆 All Seasons Overview</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { key: 'spring', name: 'Spring', emoji: '🌸', color: 'pink' },
+            { key: 'summer', name: 'Summer', emoji: '🌻', color: 'amber' },
+            { key: 'autumn', name: 'Autumn', emoji: '🍂', color: 'orange' },
+            { key: 'winter', name: 'Winter', emoji: '❄️', color: 'cyan' }
+          ].map(s => {
+            const interventions = seasonalInterventions[s.key] || [];
+            const isCurrent = s.key === season.key;
+            
+            return (
+              <div
+                key={s.key}
+                className={`p-4 rounded-lg border-2 ${
+                  isCurrent 
+                    ? `border-${s.color}-400 bg-${s.color}-50` 
+                    : 'border-gray-200 bg-white'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">{s.emoji}</span>
+                  <span className="font-medium text-gray-800">{s.name}</span>
+                  {isCurrent && (
+                    <span className="text-xs px-2 py-0.5 bg-green-500 text-white rounded">Current</span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600">
+                  {interventions.length} intervention{interventions.length !== 1 ? 's' : ''} planned
+                </p>
+                {interventions.filter(i => i.priority === 'high').length > 0 && (
+                  <p className="text-xs text-red-600 mt-1">
+                    {interventions.filter(i => i.priority === 'high').length} high priority
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </Card>
   );
 }

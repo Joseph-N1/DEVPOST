@@ -1,4 +1,6 @@
-"""Tests for analytics components."""
+/**
+ * Tests for analytics components.
+ */
 
 import React from 'react';
 import { render, screen } from '@testing-library/react';
