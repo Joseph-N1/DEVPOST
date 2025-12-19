@@ -1,36 +1,55 @@
-# Node modules
-node_modules/
+# ═══════════════════════════════════════════════════════════════
+# FRONTEND DOCKERIGNORE - IT_HACKS_25 Project
+# Updated: December 2025
+# ═══════════════════════════════════════════════════════════════
 
-# Next.js build artifacts
+# Node modules (LARGE - 140MB+)
+node_modules/
+.npm/
+.yarn/
+
+# Next.js build artifacts (LARGE - 50MB+ cache files)
 .next/
 out/
 dist/
 build/
+.cache/
 
 # Git
 .git/
 .gitignore
 
-# Environments
+# Environment files
 .env
 *.env
 .env.local
+.env.development
+.env.production
+.env.test
 
 # Logs
 npm-debug.log
 yarn-error.log
 *.log
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+Desktop.ini
 
-# Temp
+# Temp files
 *.tmp
 *.temp
+*.bak
 
-# Tests
+# Tests (not needed in build)
 tests/
+__tests__/
+*.test.js
+*.test.jsx
+*.spec.js
+*.spec.jsx
+coverage/
 
 # Storybook (if present)
 .storybook/
@@ -39,3 +58,24 @@ tests/
 .turbo/
 .vercel/
 .cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Source maps (large files)
+*.map
+
+# Lock files (not needed in image)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Documentation
+*.md
+README*
+CHANGELOG*
+docs/
+
+# TypeScript build info
+*.tsbuildinfo

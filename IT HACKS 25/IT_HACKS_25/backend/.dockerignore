@@ -1,8 +1,16 @@
+# ═══════════════════════════════════════════════════════════════
+# BACKEND DOCKERIGNORE - IT_HACKS_25 Project
+# Updated: December 2025
+# ═══════════════════════════════════════════════════════════════
+
 # Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.pytest_cache/
+*.egg-info/
+.eggs/
 
 # Git folder (prevents docker copying the repo)
 .git/
@@ -11,10 +19,20 @@ __pycache__/
 # Tests (not needed in build)
 tests/
 backend/tests/
+*.test.py
+*_test.py
+test_*.py
+conftest.py
+coverage/
+.coverage
+htmlcov/
 
-# Environment files
+# Environment files (SENSITIVE - never in image)
 .env
 *.env
+.env.local
+.env.development
+.env.production
 
 # Logs
 *.log
@@ -22,6 +40,7 @@ backend/tests/
 # OS files
 .DS_Store
 Thumbs.db
+Desktop.ini
 
 # Backend temporary + generated data
 backend/data/uploads/
@@ -29,21 +48,40 @@ backend/data/generated/
 backend/data/tmp/
 backend/data/*.csv
 backend/data/*.json
+data/uploads/
+data/generated/
+data/tmp/
+*.csv
+*.json
 
-# ML model binaries (must not go into Docker image)
+# ML model binaries (LARGE - 24MB+ per model, must not go into Docker image)
 backend/ml/models/
 backend/models/*.joblib
 backend/models/*.pkl
 backend/models/**/*.joblib
+ml/models/
+models/*.joblib
+models/*.pkl
+*.joblib
+*.pkl
+*.h5
+*.hdf5
+*.onnx
+*.pb
+*.pt
+*.pth
+*.safetensors
 
 # Local postgres data (NEVER include in image)
 data/postgres/
 backend/data/postgres/
+pgdata/
 
-# Venv
+# Virtual environment (LARGE - 100MB+)
 .venv/
 venv/
 env/
+.virtualenv/
 
 # Ignore docker volume mounts
 docker-data/
@@ -53,3 +91,44 @@ redisdata/
 
 # Node modules if backend serves static assets
 node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# Documentation (not needed in runtime image)
+*.md
+README*
+docs/
+
+# Large binary files
+*.dll
+*.so
+*.dylib
+*.exe
+*.wasm
+
+# Compressed files
+*.zip
+*.tar
+*.tar.gz
+*.gz
+*.rar
+
+# Source maps
+*.map
+
+# Alembic versions (keep migrations folder structure but not cache)
+migrations/__pycache__/
+migrations/versions/__pycache__/
+
+# Development files
+requirements_dev.txt
+Makefile
+docker-compose*.yml
+
+# Security files
+*.pem
+*.key
+*.crt
+secrets/
