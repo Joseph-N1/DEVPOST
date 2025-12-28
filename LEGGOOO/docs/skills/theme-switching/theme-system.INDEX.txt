@@ -1,0 +1,15 @@
+﻿# INDEX for: theme-system.zip
+# Generated: 2025-12-28T10:35:56.2482914+00:00
+# Generator: scripts/index_skills.ps1
+#
+# This file lists the contents of the ZIP archive.
+# To extract, run: scripts/unpack_skills.ps1
+#
+# ==============================================
+Archive: theme-system.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        0  2025-12-26 18:06   theme-system/
+     8550  2025-12-26 18:06   theme-system/SKILL.md
+---------                     -------
+     8550                     2 file(s)

@@ -1,0 +1,217 @@
+# =============================================================================
+# LEGGOOO - Collaborative IDE
+# .gitignore
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Node.js / JavaScript / TypeScript
+# -----------------------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.output/
+.cache/
+
+# TypeScript
+*.tsbuildinfo
+
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+.venv/
+venv/
+env/
+.env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Distribution / Packaging
+*.egg
+*.egg-info/
+dist/
+eggs/
+.eggs/
+*.whl
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Pytest / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# -----------------------------------------------------------------------------
+# Environment Variables
+# -----------------------------------------------------------------------------
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+.env*.local
+*.env
+
+# Keep .env.example as template
+!.env.example
+
+# -----------------------------------------------------------------------------
+# Logs
+# -----------------------------------------------------------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# -----------------------------------------------------------------------------
+# AI / Machine Learning Model Weights
+# -----------------------------------------------------------------------------
+*.bin
+*.gguf
+*.ggml
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+models/
+weights/
+checkpoints/
+
+# -----------------------------------------------------------------------------
+# IDE / Editor
+# -----------------------------------------------------------------------------
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.swp
+*.swo
+*~
+
+# -----------------------------------------------------------------------------
+# Operating System
+# -----------------------------------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# -----------------------------------------------------------------------------
+# Testing
+# -----------------------------------------------------------------------------
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# -----------------------------------------------------------------------------
+# Deployment / CI/CD
+# -----------------------------------------------------------------------------
+# Netlify
+.netlify/
+
+# Vercel
+.vercel/
+
+# Railway
+.railway/
+
+# Docker
+docker-compose.override.yml
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# -----------------------------------------------------------------------------
+# Temporary Files
+# -----------------------------------------------------------------------------
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# -----------------------------------------------------------------------------
+# Project-Specific
+# -----------------------------------------------------------------------------
+# Downloaded skill packs (keep the ZIPs in docs/skills, ignore if in downloads)
+downloads/*.zip
+
+# Local development databases
+*.sqlite
+*.sqlite3
+*.db
+
+# Uploaded files (if using local storage during dev)
+uploads/
+public/uploads/
+
+# Generated documentation (if auto-generated)
+docs/generated/
+api-docs/
+
+# Secrets (never commit these!)
+secrets/
+*.pem
+*.key
+*.crt
+*.p12

@@ -1,0 +1,115 @@
+<!-- created by Claude — 2025-12-28 -->
+
+CLAUDE BUILD PROMPT — LEGGOOO
+
+High-level objective
+Build LEGGOOO MVP: a web-based, real-time collaborative coding IDE (Monaco + Yjs) with an AI assistant (local/open-source-first) and GitHub import/push workflow. Deliver a Netlify-hosted frontend, a small Node backend (Railway/Render), Supabase (Auth/Postgres/Storage), and CI workflows. The end goal is a reproducible, tested MVP with the five docs and the /docs/skills/ assets as the design + implementation source of truth.
+
+Environment & prerequisites
+
+* Node >= 18, pnpm or npm
+* Python 3.11+ (for AI microservice; optional if using hosted LLMs)
+* Supabase account for Auth/Postgres/Storage (or local Postgres for dev)
+* Netlify account for frontend hosting
+* Railway/Render (or equivalent) for backend and y-websocket
+* Local dev: Git, Docker (optional), VS Code
+
+Branching & workflow
+
+* Use feature branches: `feature/<ticket-id>-short-desc` (e.g., `feature/t1-monaco-yjs`)
+* PR naming: `feat(<area>): <short description>`
+* Merge to `dev` first; `main` only after CI green and manual smoke test.
+
+Ordered task list (immediate build steps)
+
+1. **Repo skeleton & CI (T0-01)**
+
+   * Create monorepo folders: `frontend/`, `backend/`, `ai/`, `infra/`, `docs/`.
+   * Add `package.json` workspaces and basic scripts.
+   * Add GitHub Actions skeleton (build/test/deploy for frontend & backend).
+   * Branch: `feature/t0-repo-skeleton`
+   * Acceptance: `pnpm install` runs, GitHub Actions lint job exists.
+
+2. **Monaco + Yjs POC (T1-01)**
+
+   * Implement a minimal page using `@monaco-editor/react` and bind to Yjs via `y-monaco`.
+   * Deploy y-websocket server to Railway/Render.
+   * Branch: `feature/t1-monaco-yjs`
+   * Acceptance: Two browsers show live-syncing code and cursors.
+
+3. **Auth & Workspaces (T2-01)**
+
+   * Supabase Auth for GitHub/Google; user table migration.
+   * Workspace CRUD endpoints in backend.
+   * Branch: `feature/t2-auth-workspaces`
+   * Acceptance: Sign-in creates user; workspace created in DB.
+
+4. **GitHub import & push (T3-01)**
+
+   * Implement `POST /workspaces/import` and `POST /workspaces/:id/push` using Octokit.
+   * Encryption for stored GitHub tokens (see security_checklist.md).
+   * Branch: `feature/t3-github-integration`
+   * Acceptance: Import populates files; push creates commit on GitHub.
+
+5. **AI microservice & UI (T4-01)**
+
+   * Local FastAPI AI service exposing `/ai/query` with GPT4All or CodeLlama small.
+   * Frontend AI Pane and apply-suggestion flow.
+   * Branch: `feature/t4-ai-pane`
+   * Acceptance: `/ai/query` returns structured suggestion; "apply" updates file.
+
+6. **Editor tooling & snapshots (T5-01)**
+
+   * Prettier/ESLint integration; Yjs snapshot persistence to Supabase Storage.
+   * Branch: `feature/t5-snapshots`
+   * Acceptance: Snapshot restored on reload.
+
+7. **Theming & Accessibility (T6-01)**
+
+   * Implement CSS token-based theming using Tailwind + CSS variables; per-user theme persistence.
+   * Respect `prefers-reduced-motion` and integrate Howler for ambient audio with mute toggles.
+   * Branch: `feature/t6-theming`
+   * Acceptance: theme persists; reduced-motion disables animations.
+
+8. **CI, tests, deploy (T7-01)**
+
+   * Playwright e2e tests (two-browser sync test), accessibility checks (axe), gitleaks scan.
+   * Netlify deploy for frontend; backend to Railway/Render.
+   * Branch: `feature/t7-ci-deploy`
+   * Acceptance: CI passes and staging deploy accessible.
+
+Safety & constraints (MUST FOLLOW)
+
+* Do not commit secrets or model weights. Use `.env.example` for placeholders.
+* Do not push to `main` without `dev` passing CI and manual approval.
+* Do not unzip or run third-party installers without explicit human approval.
+* Always run `scripts/index_skills.sh` first to inspect zipped assets before using them.
+
+Acceptance tests (for each major step)
+
+* POC: two synced editors in under 250ms latency local network.
+* Auth: `GET /user/me` returns valid user record after OAuth.
+* Git integration: commit appears in GitHub with correct author.
+* AI: structured JSON response and apply endpoint updates the file atomically.
+* CI: Playwright two-client test passes.
+
+CI expectations
+
+* Lint & unit tests for both frontend & backend
+* Playwright e2e job (staging) triggered on PR
+* Security job: run gitleaks and fail on high severity
+* Accessibility job: run axe, report violations to PR
+
+Deliverable artifacts
+
+* Netlify URL (frontend): `https://<your-site>.netlify.app` (placeholder)
+* Backend URL: `https://api.<domain>` (placeholder)
+* PRs: expect separate PR per feature branch; each PR should include screenshots and manual test steps.
+
+Final notes for the agent
+
+* Read these docs first: `docs/PRD.md`, `docs/app-flow.md`, `docs/ui_guidelines.md`, `docs/tech_stack_overview.md`, `docs/plan.md`, and `docs/skills/*`.
+* Use `scripts/index_skills.sh` to inspect zip contents before using them.
+* Keep commits small and include a link to a deployed staging preview in the PR description.
+
+*End of CLAUDE_BUILD_PROMPT.txt*

@@ -1,0 +1,391 @@
+/**
+ * CSS Reduced Motion Utilities
+ * 
+ * Global styles for respecting prefers-reduced-motion preference.
+ * Import this file in your main CSS or include in Tailwind's base layer.
+ * 
+ * @file css-prefers-reduced-motion.css
+ * @skill motion-reduction
+ */
+
+/* ==========================================================================
+   BASE: Disable all animations when reduced motion is preferred
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   UTILITY CLASSES: Motion-safe and motion-reduce variants
+   ========================================================================== */
+
+/**
+ * .motion-safe:* — Only applies when user ALLOWS motion
+ * .motion-reduce:* — Only applies when user PREFERS reduced motion
+ * 
+ * These mirror Tailwind's motion-safe: and motion-reduce: variants
+ */
+
+/* Motion-Safe: Only animate when motion is allowed */
+@media (prefers-reduced-motion: no-preference) {
+  .motion-safe\:animate-spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  .motion-safe\:animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .motion-safe\:animate-bounce {
+    animation: bounce 1s infinite;
+  }
+  
+  .motion-safe\:animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .motion-safe\:animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+  
+  .motion-safe\:animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+  
+  .motion-safe\:animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+  
+  .motion-safe\:transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  
+  .motion-safe\:transition-transform {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  
+  .motion-safe\:transition-opacity {
+    transition-property: opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+  
+  .motion-safe\:hover\:scale-105:hover {
+    transform: scale(1.05);
+  }
+  
+  .motion-safe\:hover\:-translate-y-1:hover {
+    transform: translateY(-0.25rem);
+  }
+}
+
+/* Motion-Reduce: Alternative styles when motion is reduced */
+@media (prefers-reduced-motion: reduce) {
+  /* Replace spinning with pulsing opacity */
+  .motion-reduce\:animate-pulse-opacity {
+    animation: pulseOpacity 1.5s ease-in-out infinite;
+  }
+  
+  /* Instant transitions */
+  .motion-reduce\:transition-none {
+    transition: none !important;
+  }
+  
+  /* Static alternatives to animated states */
+  .motion-reduce\:no-animation {
+    animation: none !important;
+  }
+  
+  /* Opacity-only fade */
+  .motion-reduce\:fade-only {
+    opacity: 1;
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   KEYFRAMES
+   ========================================================================== */
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Safe alternative: pulsing opacity instead of rotation */
+@keyframes pulseOpacity {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* ==========================================================================
+   COMPONENT-SPECIFIC PATTERNS
+   ========================================================================== */
+
+/**
+ * Loading Spinner
+ * Normal: rotates
+ * Reduced: pulses opacity
+ */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .spinner {
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: pulseOpacity 1.5s ease-in-out infinite;
+  }
+}
+
+/**
+ * Toast Notifications
+ * Normal: slides in from bottom
+ * Reduced: fades in place
+ */
+.toast {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .toast-enter {
+    animation: slideUp 0.3s ease-out forwards;
+  }
+  
+  .toast-exit {
+    animation: slideDown 0.2s ease-in forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter {
+    animation: fadeIn 0.15s ease-out forwards;
+  }
+  
+  .toast-exit {
+    animation: fadeIn 0.1s ease-in reverse forwards;
+  }
+}
+
+/**
+ * Modal / Dialog
+ * Normal: scales and fades
+ * Reduced: fades only
+ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .modal-overlay-enter {
+    animation: fadeIn 0.2s ease-out forwards;
+  }
+  
+  .modal-content-enter {
+    animation: scaleIn 0.2s ease-out forwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay-enter,
+  .modal-content-enter {
+    animation: fadeIn 0.1s ease-out forwards;
+  }
+}
+
+/**
+ * Sidebar Panel
+ * Normal: slides from edge
+ * Reduced: instant appear
+ */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 280px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .sidebar.closed {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar {
+    transition: none;
+  }
+  
+  .sidebar.closed {
+    display: none;
+  }
+  
+  .sidebar.open {
+    display: block;
+  }
+}
+
+/**
+ * Collaborative Cursor
+ * Normal: smooth position interpolation
+ * Reduced: instant position updates
+ */
+.collab-cursor {
+  position: absolute;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .collab-cursor {
+    transition: left 0.1s ease-out, top 0.1s ease-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .collab-cursor {
+    transition: none;
+  }
+}
+
+/**
+ * Focus Ring Animation
+ * Normal: subtle pulse
+ * Reduced: static ring
+ */
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-focus, #3b82f6);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .focus-ring:focus-visible {
+    animation: focusPulse 2s ease-in-out infinite;
+  }
+  
+  @keyframes focusPulse {
+    0%, 100% { outline-offset: 2px; }
+    50% { outline-offset: 4px; }
+  }
+}
+
+/* ==========================================================================
+   TAILWIND PLUGIN INTEGRATION (for tailwind.config.js)
+   ========================================================================== */
+
+/*
+ * If using Tailwind CSS, add these to your config:
+ * 
+ * // tailwind.config.js
+ * module.exports = {
+ *   theme: {
+ *     extend: {
+ *       animation: {
+ *         'pulse-opacity': 'pulseOpacity 1.5s ease-in-out infinite',
+ *       },
+ *       keyframes: {
+ *         pulseOpacity: {
+ *           '0%, 100%': { opacity: '0.4' },
+ *           '50%': { opacity: '1' },
+ *         },
+ *       },
+ *     },
+ *   },
+ * };
+ * 
+ * Then use: motion-safe:animate-spin motion-reduce:animate-pulse-opacity
+ */

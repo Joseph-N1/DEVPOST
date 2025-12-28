@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   LEGGOOO Theme System - CSS Variables
+   ============================================ */
+
+:root {
+  /* Semantic colors - Light theme (default) */
+  --color-bg-primary: theme('colors.slate.50');
+  --color-bg-secondary: theme('colors.slate.100');
+  --color-bg-editor: theme('colors.white');
+  
+  --color-text-primary: theme('colors.slate.900');
+  --color-text-secondary: theme('colors.slate.600');
+  --color-text-muted: theme('colors.slate.400');
+  
+  --color-border: theme('colors.slate.200');
+  --color-accent: theme('colors.indigo.600');
+  --color-accent-hover: theme('colors.indigo.700');
+  
+  /* Syntax highlighting */
+  --syntax-keyword: theme('colors.purple.600');
+  --syntax-string: theme('colors.green.600');
+  --syntax-comment: theme('colors.slate.400');
+  --syntax-function: theme('colors.blue.600');
+  --syntax-variable: theme('colors.orange.600');
+  --syntax-number: theme('colors.amber.600');
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  --color-bg-primary: theme('colors.slate.900');
+  --color-bg-secondary: theme('colors.slate.800');
+  --color-bg-editor: theme('colors.slate.950');
+  
+  --color-text-primary: theme('colors.slate.50');
+  --color-text-secondary: theme('colors.slate.300');
+  --color-text-muted: theme('colors.slate.500');
+  
+  --color-border: theme('colors.slate.700');
+  --color-accent: theme('colors.indigo.400');
+  --color-accent-hover: theme('colors.indigo.300');
+  
+  /* Syntax highlighting - dark */
+  --syntax-keyword: theme('colors.purple.400');
+  --syntax-string: theme('colors.green.400');
+  --syntax-comment: theme('colors.slate.500');
+  --syntax-function: theme('colors.blue.400');
+  --syntax-variable: theme('colors.orange.400');
+  --syntax-number: theme('colors.amber.400');
+}
+
+/* High contrast light */
+[data-theme="high-contrast-light"] {
+  --color-bg-primary: theme('colors.white');
+  --color-bg-secondary: theme('colors.gray.100');
+  --color-bg-editor: theme('colors.white');
+  
+  --color-text-primary: theme('colors.black');
+  --color-text-secondary: theme('colors.gray.800');
+  --color-text-muted: theme('colors.gray.600');
+  
+  --color-border: theme('colors.black');
+  --color-accent: theme('colors.blue.800');
+  --color-accent-hover: theme('colors.blue.900');
+}
+
+/* High contrast dark */
+[data-theme="high-contrast-dark"] {
+  --color-bg-primary: theme('colors.black');
+  --color-bg-secondary: theme('colors.gray.900');
+  --color-bg-editor: theme('colors.black');
+  
+  --color-text-primary: theme('colors.white');
+  --color-text-secondary: theme('colors.gray.200');
+  --color-text-muted: theme('colors.gray.400');
+  
+  --color-border: theme('colors.white');
+  --color-accent: theme('colors.yellow.400');
+  --color-accent-hover: theme('colors.yellow.300');
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   Focus Styles (Accessibility)
+   ============================================ */
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Scrollbar Styles
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}

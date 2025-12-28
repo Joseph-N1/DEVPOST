@@ -1,0 +1,21 @@
+﻿# INDEX for: agent-native-architecture.zip
+# Generated: 2025-12-28T10:35:55.9263217+00:00
+# Generator: scripts/index_skills.ps1
+#
+# This file lists the contents of the ZIP archive.
+# To extract, run: scripts/unpack_skills.ps1
+#
+# ==============================================
+Archive: agent-native-architecture.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        0  2025-12-26 22:40   agent-native-architecture/
+     8130  2025-12-26 22:40   agent-native-architecture/SKILL.md
+        0  2025-12-26 22:40   agent-native-architecture/references/
+     8247  2025-12-26 22:40   agent-native-architecture/references/mcp-tool-design.md
+     8560  2025-12-26 22:40   agent-native-architecture/references/refactoring-to-prompt-native.md
+     8363  2025-12-26 22:40   agent-native-architecture/references/architecture-patterns.md
+     7866  2025-12-26 22:40   agent-native-architecture/references/self-modification.md
+     6522  2025-12-26 22:40   agent-native-architecture/references/system-prompt-design.md
+---------                     -------
+    47688                     8 file(s)

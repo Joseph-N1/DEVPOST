@@ -1,0 +1,15 @@
+﻿# INDEX for: frontend-design.zip
+# Generated: 2025-12-28T10:35:56.0728197+00:00
+# Generator: scripts/index_skills.ps1
+#
+# This file lists the contents of the ZIP archive.
+# To extract, run: scripts/unpack_skills.ps1
+#
+# ==============================================
+Archive: frontend-design.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        0  2025-12-26 15:28   frontend-design/
+     4274  2025-12-26 15:28   frontend-design/SKILL.md
+---------                     -------
+     4274                     2 file(s)

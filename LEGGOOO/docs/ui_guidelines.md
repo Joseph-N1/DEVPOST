@@ -5,6 +5,7 @@
 ---
 
 ## Contents (quick view)
+
 1. Overview & objectives
 2. Screen wireframes (list & descriptions)
 3. Component breakdown (props, states, events)
@@ -22,12 +23,15 @@
 ---
 
 ## 1. Overview & objectives
+
 Design a minimal, approachable web IDE with a "pixelated vibe" overlay option, per-user mood themes, and an AI assistant pane. Prioritize clarity for collaborative sessions, clear presence/ownership indicators, and an intuitive Git push flow.
 
 ## 2. Screen wireframes (screen-by-screen)
+
 For each screen, a short description is provided. Create frames in Figma sized 1440x1024 (desktop-first), with responsive variants at 1024 and 768 widths.
 
 ### Screens list
+
 - Landing / Marketing Preview (hero with "Sign in with GitHub/Google" CTAs)
 - Dashboard (Recent workspaces, Create / Import actions, Theme selector)
 - Workspace Overview (project metadata, collaborators, quick actions)
@@ -42,7 +46,9 @@ For each screen, a short description is provided. Create frames in Figma sized 1
 (Each frame includes spacing guides, component placeholders, and annotations for developer handoff.)
 
 ## 3. Component breakdown
+
 List of atomic & composite components, with props, states, events and accessibility notes. Examples:
+
 - TopBar: workspaceTitle, actions[], avatars[], onPushClick()
 - FileTree: nodes[], selectedPath, onOpen(path), onRename(path)
 - EditorWrapper (Monaco): fileContent, language, onChange, onCursorChange
@@ -56,6 +62,7 @@ List of atomic & composite components, with props, states, events and accessibil
 Each component has states (loading, empty, error, active) and events described for integration.
 
 ## 4. Theme system (per-user themes)
+
 - Base modes: Light and Dark
 - Mood Modes (per-user overrides visuals + audio): Anime, Neon City, Space Explorer, Nature Forest, Mechanical, Aviation/Aerospace
 - Pixelation: Optional overlay (toggle) that applies a subtle pixel grid and reduced anti-aliasing effect.
@@ -63,6 +70,7 @@ Each component has states (loading, empty, error, active) and events described f
 - Themes are client-side only; each user independently selects their theme. Provide JSON theme tokens to be used as CSS variables.
 
 ## 5. Color tokens & palettes
+
 - System tokens (examples):
   - --bg: #0F172A
   - --surface: #0B1220
@@ -84,6 +92,7 @@ Each component has states (loading, empty, error, active) and events described f
 - Provide full token tables in Figma styles for quick dev export.
 
 ## 6. Typography & spacing
+
 - UI font: Inter (variable) for headings and body
 - Code font: JetBrains Mono or Fira Code
 - Scale:
@@ -97,33 +106,40 @@ Each component has states (loading, empty, error, active) and events described f
 - Border radius tokens: r-sm:4px, r-md:8px, r-lg:16px
 
 ## 7. Layout grid & responsive rules
+
 - Desktop-first 12-column grid, 24px gutters
 - Editor center column: spans 7–8 columns; file tree 2–3 cols; AI pane 3 cols
 - Collapse behavior: on <1024 width, AI pane collapses into bottom drawer; file tree collapses to hamburger.
 
 ## 8. Figma-ready structure & naming
+
 - Pages: 00_DesignSystem, 01_Wireframes, 02_Screens, 03_Components, 04_Prototypes, 05_Assets
 - Components: atomic (buttons, inputs), molecules (file-list, avatar-row), organisms (editor layout), templates (workspace page)
 - Use component variants for states and a consistent naming scheme: Component / Element / State
 - Tokens: export color & typography tokens as JSON for dev handoff (Tailwind config snippet)
 
 ## 9. Assets & iconography
+
 - Use vector SVGs for icons; single-color icons that adapt to theme via `currentColor`.
 - Export assets at 1x and 2x for retina. Use `icon-` prefix naming.
 
 ## 10. Interaction patterns & microcopy
+
 - Confirm destructive actions with modal ("Are you sure you want to overwrite main?")
 - Provide short contextual microcopy: e.g., "You’re editing temp branch — push to main when ready."
 - Keyboard shortcuts: Cmd/Ctrl + S (save snapshot), Cmd/Ctrl + K (open command palette), Cmd/Ctrl + Shift + P (open AI prompt)
 
 ## 11. Accessibility checklist
+
 - Color contrast at least AA; provide high-contrast themes
 - Focus outlines for keyboard navigation
 - Screen-reader friendly labels for major controls
 - Respect prefers-reduced-motion
 
 ## 12. Handoff checklist for coding agent
+
 Deliverables for devs/coding agent:
+
 - Figma file with pages and components
 - Exported tokens JSON (colors, typography, spacing)
 - CSS variables mapping and Tailwind config snippet
@@ -135,7 +151,9 @@ Deliverables for devs/coding agent:
 - Accessibility checklist & test cases
 
 ## 13. Design references & search keywords
+
 **Keywords to use on Behance, Mobbin, UIverse, Dribbble, and Pinterest:**
+
 - "web IDE UI" / "code editor UI" / "developer tools UI"
 - "collaboration dashboard" / "team collaboration UI" / "pair programming UI"
 - "chat + editor" / "chat code editor" / "ai assistant UI"
@@ -151,5 +169,32 @@ Deliverables for devs/coding agent:
 
 ---
 
-*End of UI Guidelines (ui-guidelines.md)*
+## 14. Design → Code Mapping (Skills)
 
+<!-- updated by Claude — 2024-12-28 — added skills mapping section -->
+
+The `docs/skills/` directory contains reference implementations for translating designs into code. Key mappings:
+
+| Design Concept    | Skill Pack                  | Files                                     |
+| ----------------- | --------------------------- | ----------------------------------------- |
+| Theme tokens      | `tailwind-theming/`         | CSS variable definitions, Tailwind config |
+| Theme toggle      | `theme-switching/`          | React component, localStorage persistence |
+| Animations        | `animations-framer-motion/` | Motion variants, gesture handlers         |
+| Reduced motion    | `motion-reduction/`         | `prefers-reduced-motion` patterns         |
+| Component styling | `tailwind-design-system/`   | Tailwind component classes                |
+| Figma handoff     | `figma-to-code/`            | Conversion workflow, examples             |
+
+### Handoff Checklist
+
+Before implementing a design:
+
+1. Check `figma-to-code/examples.md` for conversion patterns
+2. Reference `tailwind-theming/README.md` for color tokens
+3. Apply `a11y-for-editors/aria-checklist.md` for accessibility
+4. Use `motion-reduction/` patterns for animations
+
+See [README_skills_index.md](README_skills_index.md) for full skill inventory.
+
+---
+
+_End of UI Guidelines (ui-guidelines.md)_

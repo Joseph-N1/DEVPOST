@@ -12,6 +12,7 @@ This document is intentionally actionable — copy/pasteable configs, SQL, and A
 ## PART A — TECH STACK (Free-first, Production-capable)
 
 ### Frontend
+
 - **Framework & Build:** React 18 + Vite 5
   - `node >=18`, `npm` or `yarn` / `pnpm`
   - Recommended starter: Vite React + TypeScript template
@@ -24,6 +25,7 @@ This document is intentionally actionable — copy/pasteable configs, SQL, and A
 - **i18n (optional):** react-intl or i18next
 
 **Local dev commands (examples)**
+
 - `pnpm install`
 - `pnpm dev` → starts Vite at `http://localhost:5173`
 - `pnpm build` → `pnpm preview`
@@ -31,6 +33,7 @@ This document is intentionally actionable — copy/pasteable configs, SQL, and A
 ---
 
 ### Realtime / Collaboration
+
 - **CRDT:** Yjs for conflict-free edits
 - **Server relay:** y-websocket (Node.js) — recommended for reliability in small-team apps
   - Lightweight server: `y-websocket` repo provides a single-file server; deploy on Railway/Render
@@ -42,6 +45,7 @@ This document is intentionally actionable — copy/pasteable configs, SQL, and A
 ---
 
 ### Backend / Orchestration
+
 - **Primary runtime:** Node.js 18+ (Express / Fastify) for REST endpoints and WebSocket relay host
 - **AI microservice:** Python (FastAPI) if using local HuggingFace/llama.cpp models; or Node.js proxy if using hosted providers
 - **Auth/Data layer:** Supabase (Postgres + Auth + Storage) recommended for MVP (free tier) — simplifies OAuth + DB + storage
@@ -50,6 +54,7 @@ This document is intentionally actionable — copy/pasteable configs, SQL, and A
 ---
 
 ### Database & Storage
+
 - **Primary DB:** PostgreSQL (Supabase-managed or self-hosted Postgres)
 - **Object storage:** Supabase Storage (S3-compatible) for snapshots, large blobs
 - **Caching / Rate-limit store:** Upstash (Redis on free tier) for rate limiting, presence cache
@@ -57,6 +62,7 @@ This document is intentionally actionable — copy/pasteable configs, SQL, and A
 ---
 
 ### AI / LLM Options (free-first)
+
 - **Local (recommended for free demo):** GPT4All, CodeLlama (small) via `llama.cpp` or `ggml` builds
 - **Local stack:** `text-generation-webui` or `gpt4all` server; orchestrate via FastAPI
 - **Hosted (optional):** OpenAI — allow user to supply their API key to avoid billing
@@ -65,6 +71,7 @@ This document is intentionally actionable — copy/pasteable configs, SQL, and A
 ---
 
 ### DevOps / CI / CD
+
 - **Repo:** GitHub
 - **CI:** GitHub Actions — build/test & deploy workflows
 - **Frontend deploy:** Netlify (Auto from GitHub or via Actions)
@@ -74,6 +81,7 @@ This document is intentionally actionable — copy/pasteable configs, SQL, and A
 ---
 
 ### Observability & Security Tools
+
 - **Errors & tracing:** Sentry (frontend & backend)
 - **Dependency scanning:** GitHub Dependabot + optional Snyk
 - **Static analysis:** ESLint, Prettier, Pyright
@@ -83,6 +91,7 @@ This document is intentionally actionable — copy/pasteable configs, SQL, and A
 ## PART B — BACKEND STRUCTURE (Implementation-ready)
 
 ### 1. Database Schema (Postgres) — Full DDL + Indexing
+
 Use Postgres with `pgcrypto`/`pg_generate_uuid` support. Below DDL includes indexes and constraints.
 
 ```sql
@@ -190,6 +199,7 @@ CREATE TABLE ai_requests (
 ---
 
 ### 2. Snapshot persistence strategy (Yjs)
+
 - Persist encoded Yjs state (`Y.encodeStateAsUpdate(doc)`) as compressed binary into Supabase Storage (or DB bytea).
 - Snapshot metadata table example:
 
@@ -209,10 +219,12 @@ CREATE TABLE snapshots (
 ---
 
 ### 3. Realtime / WebSocket integration (y-websocket)
+
 **Client connect:** `wss://api.legg000.app/yjs/{workspaceId}`
 **Protocol:** y-websocket default: clients exchange sync messages, then use Awareness API for cursors.
 
 **Server responsibilities:**
+
 - accept connections, relay updates, optionally persist updates
 - store awareness states in Redis if horizontally scaling
 - enforce per-file editor cap by checking awareness users and denying edit permission if >5 (server instructs client to become viewer)
@@ -222,6 +234,7 @@ CREATE TABLE snapshots (
 ---
 
 ### 4. API Contracts (detailed, REST — MVP)
+
 **Auth**
 
 - `GET /auth/oauth/github` — Redirect to GitHub OAuth (server handles state)
@@ -232,80 +245,91 @@ CREATE TABLE snapshots (
   ```json
   {
     "token": "<jwt>",
-    "user": { "id":"uuid","display_name":"Sam","email":"sam@example.com" }
+    "user": { "id": "uuid", "display_name": "Sam", "email": "sam@example.com" }
   }
   ```
 
 **GET /user/me**
+
 - Headers: `Authorization: Bearer <jwt>`
 - Response: `200 OK`
+
 ```json
 {
-  "id":"uuid",
-  "display_name":"Sam",
-  "email":"sam@example.com",
-  "avatar_initial":"S",
-  "preferences":{ "theme":"neon" }
+  "id": "uuid",
+  "display_name": "Sam",
+  "email": "sam@example.com",
+  "avatar_initial": "S",
+  "preferences": { "theme": "neon" }
 }
 ```
 
 **Workspaces**
+
 - `POST /workspaces` — create
+
   - Body: `{ "name":"My Hack", "visibility":"private" }`
   - Response: `201 Created` `{ "workspace": { ... } }`
 
 - `POST /workspaces/import` — import GitHub repo (async)
+
   - Body: `{ "repo_url":"https://github.com/owner/repo","branch":"main" }`
   - Response: `202 Accepted` `{ "workspace_id":"...","status_url":"/workspaces/:id/import-status" }`
 
 - `GET /workspaces/:id` — return metadata + collaborators
 
 **Files**
+
 - `GET /workspaces/:id/files` — list files (metadata)
 - `GET /files/:fileId` — return contents + language meta
 - `POST /files/:fileId/patch` — apply a patch (server validates permissions)
   - Body: `{ "patch": { "ops": [...] } }` or full `contents`
 
 **Git Push**
+
 - `POST /workspaces/:id/push`
   - Body example
   ```json
   {
-    "files": [{ "path":"src/index.js","contents":"..." }],
-    "commit_message":"feat: add login",
-    "author": { "name":"Sam","email":"sam@example.com" }
+    "files": [{ "path": "src/index.js", "contents": "..." }],
+    "commit_message": "feat: add login",
+    "author": { "name": "Sam", "email": "sam@example.com" }
   }
   ```
   - Server: validate permissions → create blobs, tree, commit → update ref via GitHub API
   - Response: `200 OK` `{ "commit_sha":"abc123","pushed_files":[...]} `
 
 **AI**
+
 - `POST /ai/query`
   - Body
   ```json
   {
-    "workspace_id":"...",
-    "file_id":"...",
+    "workspace_id": "...",
+    "file_id": "...",
     "selection": { "start": 120, "end": 320 },
-    "prompt_type":"explain",
-    "max_tokens":500
+    "prompt_type": "explain",
+    "max_tokens": 500
   }
   ```
   - Response
   ```json
   {
-    "request_id":"uuid",
-    "model":"gpt4all-v1",
+    "request_id": "uuid",
+    "model": "gpt4all-v1",
     "latency_ms": 1200,
     "result": {
-      "type":"explanation",
-      "text":"Line 1: ...\nLine 2: ...",
-      "suggestions": [ { "patch":"...", "applyEndpoint":"/files/:fileId/patch" } ]
+      "type": "explanation",
+      "text": "Line 1: ...\nLine 2: ...",
+      "suggestions": [
+        { "patch": "...", "applyEndpoint": "/files/:fileId/patch" }
+      ]
     }
   }
   ```
 
 **Errors**
+
 - 401 Unauthorized
 - 403 Forbidden
 - 404 Not Found
@@ -315,6 +339,7 @@ CREATE TABLE snapshots (
 ---
 
 ### 5. GitHub integration specifics
+
 - Use Octokit to create blobs/trees/commits:
   1. Create blob(s) for file contents
   2. Create tree
@@ -326,6 +351,7 @@ CREATE TABLE snapshots (
 ---
 
 ### 6. Security & Operational checklist (actionable)
+
 - TLS everywhere (HTTPS + WSS)
 - Encrypt GitHub tokens at rest (platform KMS or encrypted DB column)
 - Use JWTs with short expiry; store refresh tokens securely
@@ -339,6 +365,7 @@ CREATE TABLE snapshots (
 ---
 
 ### 7. Deployment recipe (MVP) — step-by-step
+
 1. Provision Supabase project (Postgres + Auth + Storage). Note ENV: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (keep secret).
 2. Configure GitHub OAuth App → set callback to `https://<api-host>/auth/oauth/callback` and save `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` in secrets.
 3. Deploy y-websocket server to Railway/Render. Set env `YWS_PORT` and enable TLS via host.
@@ -350,6 +377,7 @@ CREATE TABLE snapshots (
 ---
 
 ### 8. Local dev & debug tips
+
 - Use `ngrok` for testing OAuth callbacks when running locally
 - Use Supabase CLI/local Postgres Docker for local DB
 - For y-websocket local testing set `YWS_HOST=localhost` and use `wss://localhost` with self-signed certs or run over plain ws in dev
@@ -357,6 +385,7 @@ CREATE TABLE snapshots (
 ---
 
 ### 9. Scaling notes & future upgrades
+
 - Move y-websocket to clustered mode with Redis persistence for large scale
 - Add autoscaling inference cluster or rely on user-provided API keys
 - Introduce PR/MR workflow, CI integration for pushed commits, and code-review UI
@@ -365,21 +394,24 @@ CREATE TABLE snapshots (
 ---
 
 ## Appendix: Helpful commands & snippets
+
 **Create a commit via Octokit (Node.js simplified)**
 
 ```js
 // pseudocode
-const { Octokit } = require('@octokit/rest');
+const { Octokit } = require("@octokit/rest");
 const octokit = new Octokit({ auth: userToken });
 // create blobs, tree, commit, update ref (see GitHub REST API docs)
 ```
 
 **Example y-websocket start (node)**
+
 ```bash
 npx y-websocket-server --port 1234
 ```
 
 **Example local GPT4All start (python)**
+
 ```bash
 gpt4all --model gpt4all-lora-unfiltered-quantized.bin --server
 # then set AI_BASE_URL=http://localhost:5000
@@ -387,4 +419,43 @@ gpt4all --model gpt4all-lora-unfiltered-quantized.bin --server
 
 ---
 
-*End of detailed tech-stack-overview.md*
+## Part C — Local Skills & Scripts
+
+<!-- updated by Claude — 2024-12-28 — added local skills section -->
+
+### Skills Library
+
+LEGGOOO includes a curated library of skill packs in `docs/skills/`. These contain design patterns, code templates, and reference implementations.
+
+| Category       | Skills                                   | Contents                            |
+| -------------- | ---------------------------------------- | ----------------------------------- |
+| Editor         | `editor-integration/`                    | Monaco + Yjs setup, LSP integration |
+| Theming        | `tailwind-theming/`, `theme-switching/`  | CSS variables, theme toggle         |
+| Accessibility  | `a11y-for-editors/`, `motion-reduction/` | ARIA, reduced motion                |
+| Infrastructure | `ci-templates/`, `docker-compose-dev/`   | GitHub Actions, Docker              |
+| Design         | `figma-to-code/`, `front-end-design/`    | Figma workflow, UI patterns         |
+
+### Scripts
+
+```bash
+# Generate INDEX.txt for all skill ZIPs
+./scripts/index_skills.sh      # Bash
+.\scripts\index_skills.ps1     # PowerShell
+
+# Extract all skill ZIP archives
+./scripts/unpack_skills.sh     # Bash
+.\scripts\unpack_skills.ps1    # PowerShell
+```
+
+### Integration Points
+
+| Script            | Integrates With                 |
+| ----------------- | ------------------------------- |
+| `index_skills.*`  | Skills inventory, CI validation |
+| `unpack_skills.*` | Local development setup         |
+
+See [README_skills_index.md](../README_skills_index.md) for complete skill inventory.
+
+---
+
+_End of detailed tech-stack-overview.md_

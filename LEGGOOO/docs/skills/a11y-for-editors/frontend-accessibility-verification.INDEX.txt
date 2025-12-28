@@ -1,0 +1,16 @@
+﻿# INDEX for: frontend-accessibility-verification.zip
+# Generated: 2025-12-28T10:35:55.5853484+00:00
+# Generator: scripts/index_skills.ps1
+#
+# This file lists the contents of the ZIP archive.
+# To extract, run: scripts/unpack_skills.ps1
+#
+# ==============================================
+Archive: frontend-accessibility-verification.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        0  2025-12-26 23:02   frontend-accessibility-verification/
+     1587  2025-12-26 23:02   frontend-accessibility-verification/example.ts
+    14731  2025-12-26 23:02   frontend-accessibility-verification/SKILL.md
+---------                     -------
+    16318                     3 file(s)

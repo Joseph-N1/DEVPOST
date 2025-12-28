@@ -1,0 +1,17 @@
+﻿# INDEX for: wcag-aria-lookup.zip
+# Generated: 2025-12-28T10:35:55.7175406+00:00
+# Generator: scripts/index_skills.ps1
+#
+# This file lists the contents of the ZIP archive.
+# To extract, run: scripts/unpack_skills.ps1
+#
+# ==============================================
+Archive: wcag-aria-lookup.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        0  2025-12-26 22:59   wcag-aria-lookup/
+     3151  2025-12-26 22:59   wcag-aria-lookup/SKILL.md
+    28307  2025-12-26 22:59   wcag-aria-lookup/wcag-index.json
+    24429  2025-12-26 22:59   wcag-aria-lookup/aria-index.json
+---------                     -------
+    55887                     4 file(s)

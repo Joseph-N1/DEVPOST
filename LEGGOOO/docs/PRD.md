@@ -377,4 +377,34 @@ Open questions:
 
 ---
 
+## 14. Skills & Design Assets
+
+<!-- updated by Claude — 2024-12-28 — added skills reference section -->
+
+LEGGOOO ships with a curated library of **skill packs** containing design patterns, templates, and reference implementations. These are stored in `docs/skills/` and indexed in [README_skills_index.md](README_skills_index.md).
+
+### Key Skill Categories
+
+| Category           | Skills                                                          | Purpose                                |
+| ------------------ | --------------------------------------------------------------- | -------------------------------------- |
+| **Accessibility**  | `a11y-for-editors`, `motion-reduction`                          | WCAG compliance, screen reader support |
+| **Theming**        | `tailwind-theming`, `theme-switching`, `tailwind-design-system` | 6 theme modes, CSS variables           |
+| **Editor**         | `editor-integration`, `vscode-extensions`                       | Monaco + Yjs setup, LSP patterns       |
+| **Animation**      | `animations-framer-motion`, `motion-reduction`                  | Performant, accessible animations      |
+| **Infrastructure** | `ci-templates`, `docker-compose-dev`, `code-server`             | CI/CD, containerization                |
+
+### Scripts
+
+```bash
+# Index all ZIP archives (generates INDEX.txt)
+./scripts/index_skills.sh
+
+# Extract skill packs
+./scripts/unpack_skills.sh
+```
+
+See [README_skills_index.md](README_skills_index.md) for full inventory.
+
+---
+
 _End of PRD (PRD.md)_

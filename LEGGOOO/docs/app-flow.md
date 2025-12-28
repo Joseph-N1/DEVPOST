@@ -131,4 +131,37 @@ Landing Page → OAuth Login → Dashboard → Create/Import Workspace → Colla
 
 ---
 
+## Theme & Accessibility Flow
+
+<!-- updated by Claude — 2024-12-28 — added theme/a11y flow section -->
+
+**Lucidchart Node: "Theme & Accessibility"**
+
+```
+[User Action: Toggle Theme / Set Preference]
+        ↓
+[Frontend: Read localStorage + system preference]
+        ↓
+[Apply CSS variables via data-theme attribute]
+        ↓
+[Check prefers-reduced-motion]
+        ↓
+[Conditionally disable animations]
+        ↓
+[Persist to localStorage + optionally to user profile]
+```
+
+### Related Skills
+
+| Flow Step      | Skill Pack                   |
+| -------------- | ---------------------------- |
+| Theme toggle   | `theme-switching/SKILL.md`   |
+| CSS variables  | `tailwind-theming/README.md` |
+| Reduced motion | `motion-reduction/README.md` |
+| Editor a11y    | `a11y-for-editors/README.md` |
+
+See [README_skills_index.md](README_skills_index.md) for full skill inventory.
+
+---
+
 _End of App Flow Document (app-flow.md)_

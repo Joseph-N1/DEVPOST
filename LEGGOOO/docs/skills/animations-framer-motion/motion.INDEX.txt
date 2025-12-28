@@ -1,0 +1,32 @@
+﻿# INDEX for: motion.zip
+# Generated: 2025-12-28T10:35:55.7718640+00:00
+# Generator: scripts/index_skills.ps1
+#
+# This file lists the contents of the ZIP archive.
+# To extract, run: scripts/unpack_skills.ps1
+#
+# ==============================================
+Archive: motion.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+        0  2025-12-26 18:10   motion/
+    20509  2025-12-26 18:10   motion/SKILL.md
+    11842  2025-12-26 18:10   motion/README.md
+        0  2025-12-26 18:10   motion/scripts/
+     5814  2025-12-26 18:10   motion/scripts/init-motion.sh
+     4891  2025-12-26 18:10   motion/scripts/optimize-bundle.sh
+        0  2025-12-26 18:10   motion/.claude-plugin/
+      743  2025-12-26 18:10   motion/.claude-plugin/plugin.json
+        0  2025-12-26 18:10   motion/references/
+    16378  2025-12-26 18:10   motion/references/motion-vs-auto-animate.md
+    15723  2025-12-26 18:10   motion/references/nextjs-integration.md
+     4064  2025-12-26 18:10   motion/references/common-patterns.md
+    18996  2025-12-26 18:10   motion/references/performance-optimization.md
+        0  2025-12-26 18:10   motion/templates/
+     9278  2025-12-26 18:10   motion/templates/motion-vite-basic.tsx
+    18054  2025-12-26 18:10   motion/templates/layout-transitions.tsx
+    14901  2025-12-26 18:10   motion/templates/scroll-parallax.tsx
+    12873  2025-12-26 18:10   motion/templates/motion-nextjs-client.tsx
+    20075  2025-12-26 18:10   motion/templates/ui-components.tsx
+---------                     -------
+   174141                     19 file(s)
