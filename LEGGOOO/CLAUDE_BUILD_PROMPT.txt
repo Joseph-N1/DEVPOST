@@ -1,115 +1,324 @@
 <!-- created by Claude — 2025-12-28 -->
+<!-- updated by Claude — 2025-01-xx — aligned with PRD, ui_guidelines, tech_stack, security_checklist -->
 
 CLAUDE BUILD PROMPT — LEGGOOO
 
-High-level objective
-Build LEGGOOO MVP: a web-based, real-time collaborative coding IDE (Monaco + Yjs) with an AI assistant (local/open-source-first) and GitHub import/push workflow. Deliver a Netlify-hosted frontend, a small Node backend (Railway/Render), Supabase (Auth/Postgres/Storage), and CI workflows. The end goal is a reproducible, tested MVP with the five docs and the /docs/skills/ assets as the design + implementation source of truth.
+================================================================================
+HIGH-LEVEL OBJECTIVE
+================================================================================
 
-Environment & prerequisites
+Build LEGGOOO MVP: a web-based, real-time collaborative coding IDE (Monaco + Yjs) with an AI assistant (local/open-source-first) and GitHub import/push workflow. Deliver a Netlify-hosted frontend, a small Node backend (Railway/Render), Supabase (Auth/Postgres/Storage), and CI workflows.
 
-* Node >= 18, pnpm or npm
-* Python 3.11+ (for AI microservice; optional if using hosted LLMs)
+KEY MVP TARGETS (from PRD.md):
+* Time to first edit: <2 minutes from landing
+* Sync latency: <250ms median for intra-region participants
+* Local AI inference: <3s response time
+* Editor cap: Max 5 simultaneous editors per file (6th+ becomes viewer)
+* Target: 50 concurrent sessions initially
+
+The end goal is a reproducible, tested MVP with the docs/ folder and docs/skills/ assets as the design + implementation source of truth.
+
+================================================================================
+ENVIRONMENT & PREREQUISITES
+================================================================================
+
+* Node >= 18, pnpm (preferred for security - strict dependency isolation)
+* Python 3.11+ (for AI microservice at ai/venv/)
 * Supabase account for Auth/Postgres/Storage (or local Postgres for dev)
 * Netlify account for frontend hosting
 * Railway/Render (or equivalent) for backend and y-websocket
 * Local dev: Git, Docker (optional), VS Code
 
-Branching & workflow
+================================================================================
+DATA MODEL (from tech_stack_overview.md)
+================================================================================
+
+Database tables to implement in Supabase/Postgres:
+1. users - OAuth provider, encrypted github_token, preferences (jsonb)
+2. workspaces - owner, name, repo_url, visibility, imported_branch
+3. files - workspace_id, path, contents, is_locked_in_main
+4. sessions - workspace_id, session_token, active_users (jsonb)
+5. branches - workspace_id, name, latest_sha, commits (jsonb)
+6. presence - session_id, user_id, file_id, cursor_position, selection_range
+7. permissions - workspace_id, user_id, role (owner/editor/viewer)
+8. ai_requests - session_id, prompt_hash, response, model_used, latency_ms
+9. snapshots - workspace_id, snapshot_path, yjs_state_hash
+
+Run the DDL from docs/tech_stack_overview.md (lines 110-180) for exact schema.
+
+================================================================================
+UI ARCHITECTURE (from ui_guidelines.md)
+================================================================================
+
+COMPONENT HIERARCHY:
+* TopBar: logo, workspace name badge, user menu, push button
+* FileTree (left panel): folder/file icons, expand/collapse, context menu
+* EditorWrapper (center): Monaco + Yjs binding, tab bar, status bar
+* AIChatPane (right panel): chat history, prompt input, apply/ignore buttons
+* PresenceBar: avatar stack with cursor colors, typing indicators
+* ThemeToggle: theme selector dropdown with 8 options
+
+THEME SYSTEM (8 themes total):
+* Base modes: Light, Dark
+* Mood overlays (6):
+  - Anime (soft pastels, kawaii icons)
+  - Neon City (cyberpunk, glow effects)
+  - Space Explorer (deep blues, star particles)
+  - Nature Forest (earth tones, organic shapes)
+  - Mechanical (industrial greys, gears)
+  - Aviation (cockpit blues, instrument styling)
+
+CSS TOKENS (implement via Tailwind CSS variables):
+* --bg-primary, --bg-secondary, --bg-tertiary
+* --text-primary, --text-muted, --accent
+* --border-default, --border-focus
+* --presence-[1-5] for cursor colors
+
+TYPOGRAPHY:
+* Font: Inter (primary), JetBrains Mono (code)
+* Scale: h1=28px/700, h2=22px/600, h3=18px/600, body=16px/400, small=13px/400
+* Spacing: 4px base (xs=4, sm=8, md=16, lg=24, xl=32, xxl=48)
+
+RESPONSIVE:
+* Desktop-first 12-column grid, 24px gutters
+* <1024px: AI pane collapses to bottom drawer; file tree to hamburger
+
+================================================================================
+SECURITY REQUIREMENTS (from security_checklist.md)
+================================================================================
+
+PRIORITY A (before public demo):
+1. TLS for all endpoints (HTTPS/WSS) - Netlify handles frontend
+2. Encrypt GitHub tokens at rest (AES-256-GCM) - see security_checklist.md#2
+3. JWT best practices: 15min access tokens, 30d refresh, revocation list
+4. Rate limiting: /ai/query (10/min), /push (5/min) using express-rate-limit
+5. Secret scanning: Block code containing API keys before sending to LLMs
+6. Server-side RBAC: Enforce permissions on every endpoint (not client-trust)
+7. CORS: Whitelist only frontend origin
+8. Accessibility checks in CI: Playwright + axe-core
+
+IMPLEMENTATION SNIPPETS:
+* Token encryption: docs/security_checklist.md lines 45-60
+* Rate limiting: docs/security_checklist.md lines 80-95
+* Secret preflight: docs/security_checklist.md lines 100-115
+* RBAC middleware: docs/security_checklist.md lines 120-135
+
+================================================================================
+BRANCHING & WORKFLOW
+================================================================================
 
 * Use feature branches: `feature/<ticket-id>-short-desc` (e.g., `feature/t1-monaco-yjs`)
 * PR naming: `feat(<area>): <short description>`
 * Merge to `dev` first; `main` only after CI green and manual smoke test.
 
-Ordered task list (immediate build steps)
+================================================================================
+ORDERED TASK LIST (immediate build steps)
+================================================================================
 
-1. **Repo skeleton & CI (T0-01)**
+1. **Repo skeleton & CI (T0-01)** [COMPLETED]
 
-   * Create monorepo folders: `frontend/`, `backend/`, `ai/`, `infra/`, `docs/`.
-   * Add `package.json` workspaces and basic scripts.
-   * Add GitHub Actions skeleton (build/test/deploy for frontend & backend).
-   * Branch: `feature/t0-repo-skeleton`
-   * Acceptance: `pnpm install` runs, GitHub Actions lint job exists.
+   * Monorepo folders exist: frontend/, backend/, ai/, infra/, docs/
+   * package.json workspaces and pnpm-workspace.yaml configured
+   * GitHub Actions workflows at .github/workflows/ci.yml and deploy.yml
+   * Acceptance: `pnpm install` runs ✓, CI workflows exist ✓
 
 2. **Monaco + Yjs POC (T1-01)**
 
-   * Implement a minimal page using `@monaco-editor/react` and bind to Yjs via `y-monaco`.
-   * Deploy y-websocket server to Railway/Render.
+   * Implement collaborative editor using @monaco-editor/react + y-monaco
+   * Integrate Yjs Awareness API for presence (cursor position, user color, display_name)
+   * Deploy y-websocket server to Railway/Render
+   * ENFORCE: Max 5 editors per file - server instructs 6th+ to become viewer
+   * TARGET: <250ms sync latency
+   * Reference: docs/skills/figma-to-code/ for component patterns
    * Branch: `feature/t1-monaco-yjs`
-   * Acceptance: Two browsers show live-syncing code and cursors.
+   * Acceptance: Two browsers show live-syncing code and cursors; 6th editor becomes viewer
 
 3. **Auth & Workspaces (T2-01)**
 
-   * Supabase Auth for GitHub/Google; user table migration.
-   * Workspace CRUD endpoints in backend.
+   * Supabase Auth for GitHub/Google OAuth
+   * Run DDL migrations (users, workspaces, permissions tables)
+   * Workspace CRUD endpoints: POST /workspaces, GET /workspaces/:id, DELETE
+   * Implement invite link generation: GET /share/:token for view/edit access
+   * Encrypt GitHub tokens before storing (AES-256-GCM)
    * Branch: `feature/t2-auth-workspaces`
-   * Acceptance: Sign-in creates user; workspace created in DB.
+   * Acceptance: Sign-in creates user; workspace created in DB; invite links work
 
 4. **GitHub import & push (T3-01)**
 
-   * Implement `POST /workspaces/import` and `POST /workspaces/:id/push` using Octokit.
-   * Encryption for stored GitHub tokens (see security_checklist.md).
+   * POST /workspaces/import - clone via GitHub API, populate files table
+   * POST /workspaces/:id/push - validate permissions, create blobs/tree/commit via Octokit
+   * Implement RBAC middleware: only owner/editor can push
+   * Request minimum OAuth scopes (principle of least privilege)
+   * Reference API contracts: docs/tech_stack_overview.md lines 250-300
    * Branch: `feature/t3-github-integration`
-   * Acceptance: Import populates files; push creates commit on GitHub.
+   * Acceptance: Import populates files; push creates commit on GitHub; viewers get 403
 
 5. **AI microservice & UI (T4-01)**
 
-   * Local FastAPI AI service exposing `/ai/query` with GPT4All or CodeLlama small.
-   * Frontend AI Pane and apply-suggestion flow.
+   * FastAPI service at ai/ exposing POST /ai/query with GPT4All or CodeLlama
+   * Implement secret scanning preflight - block code containing API keys/private keys
+   * Add rate limiting: 10 requests/minute per user
+   * Frontend AIChatPane component: chat history, prompt input, apply/ignore buttons
+   * Apply suggestion flow: atomic file update via Yjs
+   * Privacy toggle: allow user to opt-out of storing AI prompts/responses
+   * TARGET: <3s inference for local models
    * Branch: `feature/t4-ai-pane`
-   * Acceptance: `/ai/query` returns structured suggestion; "apply" updates file.
+   * Acceptance: /ai/query returns suggestion; apply updates file; secrets blocked
 
 6. **Editor tooling & snapshots (T5-01)**
 
-   * Prettier/ESLint integration; Yjs snapshot persistence to Supabase Storage.
+   * Prettier/ESLint integration via Monaco
+   * Yjs snapshot persistence: Y.encodeStateAsUpdate(doc) to Supabase Storage
+   * Snapshot schedule: on session end + every 2 minutes
+   * Create snapshots table for metadata
+   * Default retention: 90 days (per PRD.md)
    * Branch: `feature/t5-snapshots`
-   * Acceptance: Snapshot restored on reload.
+   * Acceptance: Snapshot restored on reload; old snapshots cleaned up
 
 7. **Theming & Accessibility (T6-01)**
 
-   * Implement CSS token-based theming using Tailwind + CSS variables; per-user theme persistence.
-   * Respect `prefers-reduced-motion` and integrate Howler for ambient audio with mute toggles.
+   * Implement 8-theme system via CSS variables + data-theme attribute:
+     - Light, Dark (base modes)
+     - Anime, Neon City, Space Explorer, Nature Forest, Mechanical, Aviation (mood overlays)
+   * Reference: docs/skills/theme-switching/SKILL.md, docs/skills/tailwind-theming/
+   * Per-user theme persistence to localStorage + user.preferences
+   * Respect prefers-reduced-motion: conditionally disable animations
+   * Howler.js ambient audio integration with mute toggles (per-user, not broadcast)
+   * Reference: docs/skills/audio-ui-integration/
    * Branch: `feature/t6-theming`
-   * Acceptance: theme persists; reduced-motion disables animations.
+   * Acceptance: All 8 themes work; persists across sessions; reduced-motion honored
 
 8. **CI, tests, deploy (T7-01)**
 
-   * Playwright e2e tests (two-browser sync test), accessibility checks (axe), gitleaks scan.
-   * Netlify deploy for frontend; backend to Railway/Render.
+   * Playwright e2e tests:
+     - Two-browser sync test (<250ms latency verification)
+     - 5-editor cap test (6th becomes viewer)
+     - Auth flow test
+   * Accessibility: axe-core integration, AA contrast compliance
+   * Security: gitleaks scan in CI, fail on high severity
+   * Deploy: Netlify (frontend), Railway/Render (backend + y-websocket)
    * Branch: `feature/t7-ci-deploy`
-   * Acceptance: CI passes and staging deploy accessible.
+   * Acceptance: CI passes; staging URLs accessible; a11y violations = 0
 
-Safety & constraints (MUST FOLLOW)
+================================================================================
+SAFETY & CONSTRAINTS (MUST FOLLOW)
+================================================================================
 
 * Do not commit secrets or model weights. Use `.env.example` for placeholders.
 * Do not push to `main` without `dev` passing CI and manual approval.
 * Do not unzip or run third-party installers without explicit human approval.
-* Always run `scripts/index_skills.sh` first to inspect zipped assets before using them.
+* Always run `scripts/index_skills.ps1` (Windows) or `scripts/index_skills.sh` (Unix) to inspect zipped assets before using them.
+* Follow security_checklist.md Priority A items before any public demo.
+* Encrypt all tokens at rest (GitHub, refresh tokens).
+* Never trust client-side role claims - always verify server-side.
 
-Acceptance tests (for each major step)
+================================================================================
+ACCEPTANCE TESTS (for each major step)
+================================================================================
 
-* POC: two synced editors in under 250ms latency local network.
-* Auth: `GET /user/me` returns valid user record after OAuth.
-* Git integration: commit appears in GitHub with correct author.
-* AI: structured JSON response and apply endpoint updates the file atomically.
-* CI: Playwright two-client test passes.
+* T1 POC: Two synced editors in under 250ms latency local network; 6th editor becomes viewer
+* T2 Auth: GET /user/me returns valid user record after OAuth; invite links grant correct access
+* T3 Git: Commit appears in GitHub with correct author; viewer tokens get 403 on push
+* T4 AI: Structured JSON response; apply updates file atomically; secrets blocked pre-flight
+* T5 Snapshots: Editor state restored on reload; snapshots stored in Supabase Storage
+* T6 Theming: All 8 themes render correctly; prefers-reduced-motion honored
+* T7 CI: Playwright two-client test passes; gitleaks passes; axe violations = 0
 
-CI expectations
+================================================================================
+CI EXPECTATIONS (from .github/workflows/)
+================================================================================
 
-* Lint & unit tests for both frontend & backend
+* Lint & unit tests for both frontend & backend (ci.yml)
 * Playwright e2e job (staging) triggered on PR
 * Security job: run gitleaks and fail on high severity
 * Accessibility job: run axe, report violations to PR
+* Deploy job: Netlify (frontend), Railway (backend) on main merge
 
-Deliverable artifacts
+================================================================================
+API CONTRACTS REFERENCE (from tech_stack_overview.md)
+================================================================================
+
+AUTH:
+* GET /auth/oauth/github - Redirect to GitHub OAuth
+* POST /auth/oauth/callback - Exchange code for JWT + user
+* GET /user/me - Return user profile (requires Bearer token)
+
+WORKSPACES:
+* POST /workspaces - Create workspace { name, visibility }
+* POST /workspaces/import - Import GitHub repo { repo_url, branch }
+* GET /workspaces/:id - Return metadata + collaborators
+* POST /workspaces/:id/push - Push files to GitHub { files, commit_message, author }
+
+FILES:
+* GET /workspaces/:id/files - List files metadata
+* GET /files/:fileId - Return contents + language
+* POST /files/:fileId/patch - Apply patch (validate permissions)
+
+AI:
+* POST /ai/query - Send context + prompt, receive suggestion
+  - Preflight: scan for secrets, block if found
+  - Rate limit: 10/min per user
+
+SHARE:
+* POST /workspaces/:id/invite - Generate invite link { access_level }
+* GET /share/:token - Join workspace via invite
+
+================================================================================
+DELIVERABLE ARTIFACTS
+================================================================================
 
 * Netlify URL (frontend): `https://<your-site>.netlify.app` (placeholder)
 * Backend URL: `https://api.<domain>` (placeholder)
+* y-websocket URL: `wss://yjs.<domain>/{workspaceId}`
 * PRs: expect separate PR per feature branch; each PR should include screenshots and manual test steps.
 
-Final notes for the agent
+================================================================================
+SKILLS REFERENCE (docs/skills/)
+================================================================================
 
-* Read these docs first: `docs/PRD.md`, `docs/app-flow.md`, `docs/ui_guidelines.md`, `docs/tech_stack_overview.md`, `docs/plan.md`, and `docs/skills/*`.
-* Use `scripts/index_skills.sh` to inspect zip contents before using them.
-* Keep commits small and include a link to a deployed staging preview in the PR description.
+Before implementing a feature, check relevant skill packs:
 
+| Feature           | Skill Pack                      | Key Files                          |
+|-------------------|---------------------------------|------------------------------------|
+| Theme system      | tailwind-theming/               | CSS variables, Tailwind config     |
+| Theme toggle      | theme-switching/                | React component, localStorage      |
+| Animations        | animations-framer-motion/       | Motion variants, gesture handlers  |
+| Reduced motion    | motion-reduction/               | prefers-reduced-motion patterns    |
+| Component styling | tailwind-design-system/         | Tailwind component classes         |
+| Figma handoff     | figma-to-code/                  | Conversion workflow, examples      |
+| Audio integration | audio-ui-integration/           | Howler.js patterns, mute toggles   |
+| Accessibility     | a11y-for-editors/               | ARIA patterns, focus management    |
+| CI templates      | ci-templates/                   | GitHub Actions workflows           |
+| Docker dev        | docker-compose-dev/             | Local development setup            |
+
+Run `scripts/index_skills.ps1` to generate INDEX.txt for any zipped skill packs.
+
+================================================================================
+FINAL NOTES FOR THE AGENT
+================================================================================
+
+1. READ THESE DOCS FIRST (in order):
+   - docs/PRD.md - Product requirements, MVP scope, personas
+   - docs/app-flow.md - User journeys, swimlane diagrams
+   - docs/ui_guidelines.md - Theme system, components, Figma structure
+   - docs/tech_stack_overview.md - DDL, API contracts, deployment
+   - docs/security_checklist.md - Priority A security items
+   - docs/plan.md - Aligned ticket breakdown (T0-T7)
+
+2. SKILLS INSPECTION:
+   - Run `scripts/index_skills.ps1` to inspect zip contents before using
+   - Check docs/README_skills_index.md for full skill inventory
+
+3. COMMIT PRACTICES:
+   - Keep commits small and atomic
+   - Include link to deployed staging preview in PR description
+   - Reference ticket ID in commit message (e.g., "feat(t1): add Monaco editor")
+
+4. TESTING GATES:
+   - Every PR must pass: lint, type-check, unit tests
+   - E2E tests required for user-facing features
+   - Accessibility check required for UI changes
+
+================================================================================
 *End of CLAUDE_BUILD_PROMPT.txt*
+================================================================================
