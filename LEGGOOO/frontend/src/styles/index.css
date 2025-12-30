@@ -1,15 +1,48 @@
+/* =============================================================================
+   LEGGOOO — Design System Stylesheet
+   Following ui_guidelines.md specifications
+   ============================================================================= */
+
+/* Font Imports */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================
-   LEGGOOO Theme System - CSS Variables
-   8 themes per ui_guidelines.md:
-   - Light, Dark (base modes)
-   - Anime, Neon City, Space Explorer, Nature Forest, Mechanical, Aviation (mood overlays)
-   ============================================ */
+/* =============================================================================
+   CSS Custom Properties (Design Tokens)
+   ============================================================================= */
 
 :root {
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  /* Spacing Scale (4px base per UI guidelines) */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-6: 1.5rem;    /* 24px */
+  --space-8: 2rem;      /* 32px */
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+  
+  /* Z-index scale */
+  --z-dropdown: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+  
   /* Default: Dark theme (developer preference) */
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
@@ -26,6 +59,7 @@
   
   --accent: #6366f1;
   --accent-hover: #818cf8;
+  --accent-glow: rgba(99, 102, 241, 0.3);
   
   /* Status colors */
   --success: #22c55e;
@@ -37,6 +71,10 @@
   --ring: #6366f1;
   --ring-offset: #0f172a;
   
+  /* Glass effect */
+  --glass-bg: rgba(15, 23, 42, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  
   /* Presence colors for cursors */
   --presence-1: #FF6B6B;
   --presence-2: #4ECDC4;
@@ -45,9 +83,9 @@
   --presence-5: #FFEAA7;
 }
 
-/* ============================================
+/* =============================================================================
    Light Theme
-   ============================================ */
+   ============================================================================= */
 [data-theme="light"] {
   --bg-primary: #f8fafc;
   --bg-secondary: #f1f5f9;
@@ -64,13 +102,16 @@
   
   --accent: #4f46e5;
   --accent-hover: #6366f1;
+  --accent-glow: rgba(79, 70, 229, 0.2);
   
   --ring-offset: #f8fafc;
+  --glass-bg: rgba(248, 250, 252, 0.9);
+  --glass-border: rgba(0, 0, 0, 0.1);
 }
 
-/* ============================================
+/* =============================================================================
    Dark Theme (explicit)
-   ============================================ */
+   ============================================================================= */
 [data-theme="dark"] {
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
@@ -87,19 +128,24 @@
   
   --accent: #6366f1;
   --accent-hover: #818cf8;
+  --accent-glow: rgba(99, 102, 241, 0.3);
   
   --ring-offset: #0f172a;
+  --glass-bg: rgba(15, 23, 42, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
 }
 
-/* ============================================
+/* =============================================================================
    Anime Theme - Soft pastels, kawaii vibe
-   ============================================ */
+   ============================================================================= */
 [data-theme="anime"] {
   --bg-primary: #fef3f2;
   --bg-secondary: #ffe4e6;
   --bg-tertiary: #fecdd3;
   
   --text-primary: #4c1d95;
+  --text-secondary: #6d28d9;
+  --text-tertiary: #8b5cf6;
   --text-muted: #7c3aed;
   
   --border-default: #f9a8d4;
@@ -107,6 +153,10 @@
   
   --accent: #ec4899;
   --accent-hover: #f472b6;
+  --accent-glow: rgba(236, 72, 153, 0.3);
+  
+  --glass-bg: rgba(254, 243, 242, 0.9);
+  --glass-border: rgba(236, 72, 153, 0.2);
   
   --presence-1: #f472b6;
   --presence-2: #a78bfa;
@@ -115,15 +165,17 @@
   --presence-5: #fbbf24;
 }
 
-/* ============================================
+/* =============================================================================
    Neon City Theme - Cyberpunk, glow effects
-   ============================================ */
+   ============================================================================= */
 [data-theme="neon-city"] {
   --bg-primary: #0a0a0f;
   --bg-secondary: #12121a;
   --bg-tertiary: #1a1a2e;
   
   --text-primary: #e0e0ff;
+  --text-secondary: #b0b0d0;
+  --text-tertiary: #7878a0;
   --text-muted: #7878a0;
   
   --border-default: #2d2d4a;
@@ -131,6 +183,10 @@
   
   --accent: #00ff88;
   --accent-hover: #00ffaa;
+  --accent-glow: rgba(0, 255, 136, 0.4);
+  
+  --glass-bg: rgba(10, 10, 15, 0.85);
+  --glass-border: rgba(0, 255, 136, 0.2);
   
   --presence-1: #ff0080;
   --presence-2: #00ff88;
@@ -139,15 +195,17 @@
   --presence-5: #ffff00;
 }
 
-/* ============================================
+/* =============================================================================
    Space Explorer Theme - Deep blues, cosmic
-   ============================================ */
+   ============================================================================= */
 [data-theme="space-explorer"] {
   --bg-primary: #020617;
   --bg-secondary: #0c1222;
   --bg-tertiary: #162032;
   
   --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
   --text-muted: #64748b;
   
   --border-default: #1e3a5f;
@@ -155,6 +213,10 @@
   
   --accent: #3b82f6;
   --accent-hover: #60a5fa;
+  --accent-glow: rgba(59, 130, 246, 0.3);
+  
+  --glass-bg: rgba(2, 6, 23, 0.9);
+  --glass-border: rgba(59, 130, 246, 0.2);
   
   --presence-1: #f97316;
   --presence-2: #06b6d4;
@@ -163,15 +225,17 @@
   --presence-5: #eab308;
 }
 
-/* ============================================
+/* =============================================================================
    Nature Forest Theme - Earth tones, organic
-   ============================================ */
+   ============================================================================= */
 [data-theme="nature-forest"] {
   --bg-primary: #1a2e1a;
   --bg-secondary: #243524;
   --bg-tertiary: #2e4030;
   
   --text-primary: #e8f5e8;
+  --text-secondary: #b8d4b8;
+  --text-tertiary: #9cbc9c;
   --text-muted: #9cbc9c;
   
   --border-default: #3d5a3d;
@@ -179,6 +243,10 @@
   
   --accent: #4ade80;
   --accent-hover: #86efac;
+  --accent-glow: rgba(74, 222, 128, 0.3);
+  
+  --glass-bg: rgba(26, 46, 26, 0.9);
+  --glass-border: rgba(74, 222, 128, 0.2);
   
   --presence-1: #fb923c;
   --presence-2: #4ade80;
@@ -187,15 +255,17 @@
   --presence-5: #f472b6;
 }
 
-/* ============================================
+/* =============================================================================
    Mechanical Theme - Industrial, gears
-   ============================================ */
+   ============================================================================= */
 [data-theme="mechanical"] {
   --bg-primary: #18181b;
   --bg-secondary: #27272a;
   --bg-tertiary: #3f3f46;
   
   --text-primary: #fafafa;
+  --text-secondary: #d4d4d8;
+  --text-tertiary: #a1a1aa;
   --text-muted: #a1a1aa;
   
   --border-default: #52525b;
@@ -203,6 +273,10 @@
   
   --accent: #f59e0b;
   --accent-hover: #fbbf24;
+  --accent-glow: rgba(245, 158, 11, 0.3);
+  
+  --glass-bg: rgba(24, 24, 27, 0.9);
+  --glass-border: rgba(245, 158, 11, 0.2);
   
   --presence-1: #ef4444;
   --presence-2: #f59e0b;
@@ -211,15 +285,17 @@
   --presence-5: #a855f7;
 }
 
-/* ============================================
+/* =============================================================================
    Aviation Theme - Cockpit blues, instruments
-   ============================================ */
+   ============================================================================= */
 [data-theme="aviation"] {
   --bg-primary: #0c1929;
   --bg-secondary: #132238;
   --bg-tertiary: #1c3249;
   
   --text-primary: #d1e9ff;
+  --text-secondary: #93c5fd;
+  --text-tertiary: #7ba3cc;
   --text-muted: #7ba3cc;
   
   --border-default: #2a4a6b;
@@ -227,6 +303,10 @@
   
   --accent: #38bdf8;
   --accent-hover: #7dd3fc;
+  --accent-glow: rgba(56, 189, 248, 0.3);
+  
+  --glass-bg: rgba(12, 25, 41, 0.9);
+  --glass-border: rgba(56, 189, 248, 0.2);
   
   --presence-1: #f87171;
   --presence-2: #38bdf8;
@@ -235,16 +315,16 @@
   --presence-5: #c084fc;
 }
 
-/* ============================================
+/* =============================================================================
    Base Styles
-   ============================================ */
+   ============================================================================= */
 
 * {
   box-sizing: border-box;
 }
 
 html {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -254,16 +334,263 @@ body {
   padding: 0;
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  line-height: 1.6;
 }
 
 /* Code font */
 code, pre, .font-mono {
-  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 
-/* ============================================
-   Reduced Motion (Accessibility)
-   ============================================ */
+/* =============================================================================
+   Glass Effect Utilities
+   ============================================================================= */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+/* =============================================================================
+   Glow Effects (per UI guidelines)
+   ============================================================================= */
+
+.glow {
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.glow-sm {
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.glow-lg {
+  box-shadow: 0 0 30px var(--accent-glow), 0 0 60px var(--accent-glow);
+}
+
+/* Neon theme specific glow */
+[data-theme="neon-city"] .neon-text {
+  text-shadow: 0 0 10px currentColor, 0 0 20px currentColor;
+}
+
+[data-theme="neon-city"] .neon-border {
+  box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent), inset 0 0 10px var(--accent-glow);
+}
+
+/* =============================================================================
+   Component Utilities
+   ============================================================================= */
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-focus);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+/* Input fields */
+.input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.input:hover {
+  border-color: var(--text-muted);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Cards */
+.card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.card-hover {
+  transition: all var(--transition-base);
+}
+
+.card-hover:hover {
+  border-color: var(--border-focus);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* =============================================================================
+   Layout Components
+   ============================================================================= */
+
+/* Top bar */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 var(--space-4);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+/* Sidebar */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  height: 100%;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-default);
+}
+
+/* Panel */
+.panel {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  font-weight: 600;
+}
+
+/* =============================================================================
+   Avatar & Presence
+   ============================================================================= */
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--accent);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-sm { width: 24px; height: 24px; font-size: 0.75rem; }
+.avatar-lg { width: 40px; height: 40px; font-size: 1rem; }
+
+.avatar-group {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-group .avatar {
+  margin-left: -8px;
+  border: 2px solid var(--bg-primary);
+}
+
+.avatar-group .avatar:first-child {
+  margin-left: 0;
+}
+
+.presence-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-secondary);
+}
+
+.presence-dot.online { background-color: var(--success); }
+.presence-dot.away { background-color: var(--warning); }
+.presence-dot.offline { background-color: var(--text-muted); }
+
+/* =============================================================================
+   Accessibility - Reduced Motion
+   ============================================================================= */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -276,18 +603,18 @@ code, pre, .font-mono {
   }
 }
 
-/* ============================================
+/* =============================================================================
    Focus Styles (Accessibility)
-   ============================================ */
+   ============================================================================= */
 
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* ============================================
+/* =============================================================================
    Scrollbar Styles
-   ============================================ */
+   ============================================================================= */
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -307,12 +634,18 @@ code, pre, .font-mono {
   background: var(--text-muted);
 }
 
-/* ============================================
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) var(--bg-secondary);
+}
+
+/* =============================================================================
    Monaco Editor Overrides
-   ============================================ */
+   ============================================================================= */
 
 .monaco-editor {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+  font-family: var(--font-mono) !important;
 }
 
 .monaco-editor .cursors-layer .cursor {
@@ -342,32 +675,85 @@ code, pre, .font-mono {
   color: white;
 }
 
-/* ============================================
-   Animation Classes
-   ============================================ */
+/* =============================================================================
+   Animations
+   ============================================================================= */
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px var(--accent-glow); }
+  50% { box-shadow: 0 0 20px var(--accent-glow), 0 0 30px var(--accent-glow); }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-slide-up { animation: slideUp 0.3s ease-out; }
+.animate-slide-down { animation: slideDown 0.3s ease-out; }
+.animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.animate-spin { animation: spin 1s linear infinite; }
+.animate-glow { animation: glow 2s ease-in-out infinite; }
+
+/* =============================================================================
+   Responsive - Mobile Collapse (per UI guidelines: 1024px breakpoint)
+   ============================================================================= */
+
+@media (max-width: 1024px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 56px;
+    bottom: 0;
+    z-index: var(--z-dropdown);
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
   }
-  to {
-    transform: rotate(360deg);
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: calc(var(--z-dropdown) - 1);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base);
+  }
+  
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
+@media (max-width: 768px) {
+  .top-bar {
+    height: 48px;
+    padding: 0 var(--space-3);
+  }
 }

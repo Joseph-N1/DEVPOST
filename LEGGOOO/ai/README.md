@@ -76,9 +76,9 @@ ai/
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | Health check |
+| Method | Endpoint    | Description              |
+| ------ | ----------- | ------------------------ |
+| `GET`  | `/health`   | Health check             |
 | `POST` | `/ai/query` | Generate code suggestion |
 
 ### `/ai/query` Request
