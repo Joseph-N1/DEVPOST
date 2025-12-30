@@ -6,6 +6,7 @@ import { GitHubImportModal } from '../../components/github/GitHubImportModal';
 import { GitHubPushButton } from '../../components/github/GitHubPushButton';
 import { ChatPane } from '../../components/chat';
 import { SnapshotPanel } from '../../components/snapshots';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 import { useKeyboardShortcuts, createWorkspaceShortcuts } from '../../hooks/useKeyboardShortcuts';
 
 interface FileNode {
@@ -440,6 +441,9 @@ export default function WorkspacePage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </button>
+
+          {/* Theme toggle */}
+          <ThemeToggle size="sm" />
         </div>
       </header>
 

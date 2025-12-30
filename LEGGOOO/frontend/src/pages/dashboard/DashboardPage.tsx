@@ -6,6 +6,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { ThemeToggle } from '../../components/ui/ThemeToggle';
 
 interface Owner {
   id: string;
@@ -131,6 +132,7 @@ export function DashboardPage() {
           <h1 className="text-xl font-bold text-[var(--accent)]">LEGGOOO</h1>
           
           <div className="flex items-center gap-4">
+            <ThemeToggle size="sm" />
             <div className="flex items-center gap-2">
               {user?.avatarUrl && (
                 <img

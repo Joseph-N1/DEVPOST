@@ -1,39 +1,45 @@
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { WorkspacePage } from './pages';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { LoginPage } from './pages/auth/LoginPage';
 import { AuthCallbackPage } from './pages/auth/AuthCallbackPage';
 import { AuthErrorPage } from './pages/auth/AuthErrorPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { ThemeToggle } from './components/ui/ThemeToggle';
+import { SkipLink } from './hooks/useAccessibility';
 
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/auth/callback" element={<AuthCallbackPage />} />
-          <Route path="/auth/error" element={<AuthErrorPage />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/workspace/:workspaceId"
-            element={
-              <ProtectedRoute>
-                <WorkspacePage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </AuthProvider>
+      <ThemeProvider defaultTheme="system">
+        <AuthProvider>
+          <SkipLink href="#main-content">Skip to main content</SkipLink>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+            <Route path="/auth/error" element={<AuthErrorPage />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/workspace/:workspaceId"
+              element={
+                <ProtectedRoute>
+                  <WorkspacePage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }
@@ -52,18 +58,24 @@ function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex items-center justify-center">
-      <div className="text-center max-w-2xl px-4">
-        <h1 className="text-6xl font-bold mb-4">
-          <span className="text-[var(--accent)]">🚀</span> LEGGOOO
-        </h1>
-        <p className="text-xl text-[var(--text-muted)] mb-8">
-          Real-Time Collaborative Coding IDE for Small Teams
-        </p>
-        <p className="text-[var(--text-muted)] mb-8">
-          Code together in real-time with your team. Built-in AI assistant, 
-          GitHub integration, and beautiful themes.
-        </p>
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      {/* Header with theme toggle */}
+      <header className="absolute top-0 right-0 p-4">
+        <ThemeToggle />
+      </header>
+      
+      <main id="main-content" className="flex items-center justify-center min-h-screen">
+        <div className="text-center max-w-2xl px-4">
+          <h1 className="text-6xl font-bold mb-4">
+            <span className="text-[var(--accent)]" aria-hidden="true">🚀</span> LEGGOOO
+          </h1>
+          <p className="text-xl text-[var(--text-muted)] mb-8">
+            Real-Time Collaborative Coding IDE for Small Teams
+          </p>
+          <p className="text-[var(--text-muted)] mb-8">
+            Code together in real-time with your team. Built-in AI assistant, 
+            GitHub integration, and beautiful themes.
+          </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
           {isAuthenticated ? (
@@ -122,6 +134,7 @@ function Home() {
           Built with React + Monaco + Yjs | Max 5 editors per file
         </p>
       </div>
+    </main>
     </div>
   );
 }

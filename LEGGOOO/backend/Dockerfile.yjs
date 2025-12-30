@@ -1,0 +1,47 @@
+# Yjs WebSocket Server Dockerfile
+# Standalone WebSocket server for real-time collaboration
+
+FROM node:20-alpine
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@9 --activate
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S yjsserver -u 1001 -G nodejs
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml* ./
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy TypeScript config and source
+COPY tsconfig.json ./
+COPY src/yjs-server.ts ./src/
+
+# Build the yjs server
+RUN pnpm exec tsc --project tsconfig.json --outDir dist src/yjs-server.ts || \
+    npx esbuild src/yjs-server.ts --bundle --platform=node --outfile=dist/yjs-server.js --external:ws --external:y-websocket --external:yjs --external:y-protocols --external:lib0
+
+# Set ownership to non-root user
+RUN chown -R yjsserver:nodejs /app
+
+# Switch to non-root user
+USER yjsserver
+
+# Expose WebSocket port
+EXPOSE 1234
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=1234
+
+# Health check - WebSocket servers don't respond to HTTP, so we just check the port is listening
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD node -e "const net = require('net'); const s = new net.Socket(); s.setTimeout(5000); s.connect(1234, 'localhost', () => { s.destroy(); process.exit(0); }); s.on('error', () => process.exit(1));"
+
+# Start the Yjs server
+CMD ["node", "dist/yjs-server.js"]

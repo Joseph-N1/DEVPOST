@@ -10,7 +10,8 @@
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:ci": "vitest run --coverage"
   },
   "dependencies": {
     "@octokit/rest": "^20.0.0",
